@@ -1,12 +1,11 @@
 
-
 import random
 import re
 import os
 from datetime import datetime
 
 import streamlit as st
-from openai import OpenAI
+from google import genai
 
 
 # ---------------- PAGE CONFIG ----------------
@@ -17,15 +16,19 @@ st.set_page_config(
 )
 
 st.title("🤖 RuleBot AI")
-st.caption("Rule-based chatbot + AI-powered answers")
+st.caption("Rule-based chatbot + Gemini AI")
 
 
 # ---------------- API CONFIGURATION ----------------
 def get_api_key():
     try:
-        return st.secrets["OPENAI_API_KEY"]
+        key = st.secrets.get("GEMINI_API_KEY")
+        if key:
+            return key
     except (KeyError, FileNotFoundError):
-        return os.getenv("OPENAI_API_KEY")
+        pass
+
+    return os.getenv("GEMINI_API_KEY")
 
 
 # ---------------- RULE-BASED RESPONSES ----------------
@@ -35,35 +38,45 @@ responses = {
         "Hi there! Welcome to RuleBot.",
         "Hey! Nice to meet you."
     ],
+
     r"\bhow are you\b": [
         "I'm doing great! How are you?",
         "I'm fine, thanks for asking!"
     ],
+
     r"\b(your name|who are you)\b": [
         "I'm RuleBot AI, your Python chatbot."
     ],
+
     r"\b(your age|how old are you)\b": [
         "I'm an AI chatbot, so I don't have a human age."
     ],
+
     r"\b(who made you|who created you|creator)\b": [
-        "I was built using Python, Streamlit, and an AI API."
+        "I was built using Python, Streamlit, and Google Gemini AI."
     ],
+
     r"\b(what is python|define python)\b": [
         "Python is a popular programming language known for its readable syntax."
     ],
+
     r"\b(what is ai|artificial intelligence)\b": [
         "Artificial intelligence enables computers to perform tasks that typically require human intelligence."
     ],
+
     r"\b(machine learning|what is ml)\b": [
         "Machine learning helps computers learn patterns from data."
     ],
+
     r"\b(joke|tell me a joke)\b": [
         "Why do programmers prefer dark mode? Because light attracts bugs!",
         "Why was the computer cold? It left its Windows open!"
     ],
+
     r"\b(thanks|thank you)\b": [
         "You're welcome! Happy to help."
     ],
+
     r"\b(bye|goodbye|exit|quit)\b": [
         "Goodbye! Have a wonderful day."
     ]
@@ -71,7 +84,7 @@ responses = {
 
 
 def get_rule_response(user):
-    # Dynamic date and time
+    # Live date and time
     if re.search(r"\b(time|clock)\b", user):
         return "Current time: " + datetime.now().strftime("%I:%M %p")
 
@@ -86,63 +99,65 @@ def get_rule_response(user):
 
     if re.search(r"\b(help|what can you do)\b", user):
         return (
-            "I can answer basic questions, tell jokes, "
-            "show the date and time, and answer other questions using AI."
+            "I can answer basic questions, tell jokes, show the date "
+            "and time, and answer other questions using Gemini AI."
         )
 
     for pattern, replies in responses.items():
         if re.search(pattern, user):
             return random.choice(replies)
 
-    # None means this question needs an AI response
+    # Unknown question goes to Gemini
     return None
 
 
-# ---------------- AI RESPONSE ----------------
-def get_ai_response(user):
+# ---------------- GEMINI AI RESPONSE ----------------
+def get_ai_response():
     api_key = get_api_key()
 
     if not api_key:
         return (
-            "AI API key is missing. Add OPENAI_API_KEY "
-            "in Streamlit Secrets or your environment variables."
+            "Gemini API key is missing. Add GEMINI_API_KEY "
+            "to Streamlit Secrets or your environment variables."
         )
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = genai.Client(api_key=api_key)
 
-        # Keep recent conversation context
-        history = st.session_state.messages[-12:]
+        # Use recent conversation for context
+        history = st.session_state.messages[-11:]
 
-        conversation = [
-            {
-                "role": "system",
-                "content": (
-                    "You are RuleBot AI, a friendly and helpful assistant. "
-                    "Answer the user's question clearly and accurately. "
-                    "Use simple language and give examples when useful. "
-                    "If you are unsure, say so rather than inventing facts."
-                )
-            }
-        ]
-
-        for message in history:
-            conversation.append({
-                "role": message["role"],
-                "content": message["content"]
-            })
-
-        result = client.responses.create(
-            model="gpt-6-astra",
-            input=conversation,
-            max_output_tokens=500
+        conversation_text = "\n".join(
+            f"{'User' if m['role'] == 'user' else 'RuleBot'}: "
+            f"{m['content']}"
+            for m in history
         )
 
-        return result.output_text
+        prompt = (
+            "You are RuleBot AI, a friendly and helpful assistant. "
+            "Answer the latest user message accurately and clearly. "
+            "Use simple language and examples where helpful. "
+            "If unsure, acknowledge uncertainty.\n\n"
+            "Conversation:\n"
+            + conversation_text
+            + "\n\nReply to the latest user message."
+        )
 
-    except Exception as error:
-        st.error("AI service could not respond. Check your API key, "
-                 "API access, account quota, and connection.")
+        result = client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=prompt
+        )
+
+        if result.text:
+            return result.text
+
+        return "I couldn't generate a response. Please try again."
+
+    except Exception:
+        st.error(
+            "Gemini could not respond. Check your API key, "
+            "model access, API quota, and internet connection."
+        )
         return "Sorry, I couldn't generate an answer right now."
 
 
@@ -150,7 +165,6 @@ def get_ai_response(user):
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display previous messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -175,12 +189,10 @@ if prompt := st.chat_input("Ask me anything..."):
     with st.chat_message("assistant"):
         with st.spinner("RuleBot is thinking..."):
 
-            # Check rules first
             reply = get_rule_response(user)
 
-            # Unknown question goes to the AI API
             if reply is None:
-                reply = get_ai_response(user)
+                reply = get_ai_response()
 
             st.markdown(reply)
 
