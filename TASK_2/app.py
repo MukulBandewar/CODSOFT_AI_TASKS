@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 
 st.set_page_config(
@@ -250,6 +250,6 @@ with st.expander("🧠 How does the AI work?"):
     """)
 
 st.caption("Built with Python and Streamlit 🎮")
-```
+
 
 
