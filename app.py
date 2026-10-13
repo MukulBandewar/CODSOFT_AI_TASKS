@@ -3,8 +3,7 @@ import re
 import os
 from datetime import datetime
 import streamlit as st
-from google import generativeai
-from google.generativeai import types  # 🔴 API பிழையைச் சரிசெய்ய இது அவசியம்
+import google.generativeai as genai  # 🔴 இங்கிருந்து சரியாக மாற்றப்பட்டுள்ளது
 
 # ---------------- PAGE CONFIG & CUSTOM THEME ----------------
 st.set_page_config(
@@ -150,7 +149,8 @@ def get_ai_response():
         )
     
     try:
-        client = genai.Client(api_key=api_key)
+        # 🔴 google-generativeai க்கான சரியான கான்ஃபிகரேஷன் முறை
+        genai.configure(api_key=api_key)
         
         # சமீபத்திய அரட்டை விவரங்களை எடுத்தல்
         history = st.session_state.messages[-12:]
@@ -160,29 +160,24 @@ def get_ai_response():
             for msg in history
         )
         
-        # 🔴 புதிய SDK-க்கு ஏற்றவாறு types.GenerateContentConfig முறையாக மாற்றப்பட்டுள்ளது
-        config = types.GenerateContentConfig(
-            system_instruction=(
-                "You are RuleBot AI, a friendly and helpful assistant. "
-                "Answer the user's latest message accurately in simple language. "
-                "Use examples when useful. If you are unsure, say so."
-            )
-        )
-        
         full_prompt = f"Conversation history:\n{conversation_text}\n\nAnswer the latest user message."
         
-        # தற்போதைய நிலையான மாடல்கள்
-        models = ["gemini-2.5-flash", "gemini-2.5-pro"]
+        # 🔴 google-generativeai-க்கு உகந்த மாடல்கள் மற்றும் சிஸ்டம் அறிவுறுத்தல் முறை
+        models = ["gemini-1.5-flash", "gemini-1.5-pro"]
         last_error = None
         
         for model_name in models:
             try:
-                # 🔴 config அளவுரு திருத்தப்பட்டுள்ளது
-                result = client.models.generate_content(
-                    model=model_name,
-                    contents=full_prompt,
-                    config=config
+                # 🔴 பழைய முறையில் மாடல் மற்றும் சிஸ்டம் இன்ஸ்ட்ரக்ஷன் அமைக்கும் முறை
+                model = genai.GenerativeModel(
+                    model_name=model_name,
+                    system_instruction=(
+                        "You are RuleBot AI, a friendly and helpful assistant. "
+                        "Answer the user's latest message accurately in simple language. "
+                        "Use examples when useful. If you are unsure, say so."
+                    )
                 )
+                result = model.generate_content(full_prompt)
                 answer = getattr(result, "text", None)
                 if answer and answer.strip():
                     return answer.strip()
