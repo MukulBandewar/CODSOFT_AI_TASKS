@@ -7,52 +7,62 @@ st.set_page_config(page_title="RecoVerse AI", page_icon="🎯", layout="wide")
 
 st.markdown("""
 <style>
-.stApp {background:linear-gradient(135deg,#0b1220,#172943)}
-h1,h2,h3,p,label {color:white}
-div.stButton>button {width:100%;border-radius:10px;font-weight:bold}
+.stApp{background:linear-gradient(135deg,#0b1220,#172943);color:white}
+h1,h2,h3,p,label{color:white}
+.hero{padding:25px;border-radius:18px;background:linear-gradient(120deg,#273c75,#192a56);text-align:center}
+div.stButton>button{width:100%;min-height:42px;border-radius:10px;font-weight:bold}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🎯 RecoVerse AI")
-st.write("Find movies, books and products based on your interests.")
+# ---------------- DATASETS ----------------
+movies = [
+("3 Idiots","Indian","Comedy Drama","Hindi",8.4,"Check current OTT catalogue","Hindi","College, friendship, engineering"),
+("Dangal","Indian","Sports Drama","Hindi",8.3,"Check current OTT catalogue","Hindi","Wrestling, family, motivation"),
+("Drishyam","Indian","Crime Thriller","Hindi",8.2,"Check current OTT catalogue","Hindi","Mystery, crime, suspense"),
+("12th Fail","Indian","Drama Motivation","Hindi",8.8,"Check current OTT catalogue","Hindi","Education, UPSC, determination"),
+("RRR","Indian","Action Drama","Telugu",7.8,"Check current OTT catalogue","Telugu, Hindi","Action, friendship, history"),
+("Kantara","Indian","Action Thriller","Kannada",8.2,"Check current OTT catalogue","Kannada, Hindi","Folklore, mystery, action"),
+("Interstellar","Hollywood","Sci-Fi Adventure","English",8.7,"Check current OTT catalogue","English","Space, science, survival"),
+("Inception","Hollywood","Sci-Fi Thriller","English",8.8,"Check current OTT catalogue","English","Dreams, mind, science fiction"),
+("The Dark Knight","Hollywood","Action Crime","English",9.0,"Check current OTT catalogue","English","Batman, crime, justice"),
+("Titanic","Hollywood","Romance Drama","English",7.9,"Check current OTT catalogue","English","Romance, ship, history")
+]
+movie_df = pd.DataFrame(movies, columns=[
+    "Name","Industry","Genre","Language","IMDb Rating",
+    "OTT Information","Dubbed Languages","Description"
+])
 
-# Sample datasets
-movies = pd.DataFrame([
-    ["3 Idiots","Comedy Drama","Indian",8.4],
-    ["Dangal","Sports Drama","Indian",8.3],
-    ["Drishyam","Crime Thriller","Indian",8.2],
-    ["RRR","Action Drama","Indian",7.8],
-    ["Interstellar","Sci-Fi Adventure","Hollywood",8.7],
-    ["Inception","Sci-Fi Thriller","Hollywood",8.8],
-    ["The Dark Knight","Action Crime","Hollywood",9.0],
-    ["Titanic","Romance Drama","Hollywood",7.9]
-], columns=["Name","Genre","Industry","Rating"])
+books = [
+("Atomic Habits","James Clear","Self Help Productivity","Habits, discipline, personal growth"),
+("The Psychology of Money","Morgan Housel","Finance Psychology","Money, investing, financial behaviour"),
+("Wings of Fire","A. P. J. Abdul Kalam","Biography Motivation","Science, India, determination"),
+("The Alchemist","Paulo Coelho","Fiction Adventure","Dreams, journey, self discovery"),
+("Harry Potter","J. K. Rowling","Fantasy Adventure","Magic, friendship, wizard school"),
+("Clean Code","Robert C. Martin","Programming Education","Software development, coding, best practices"),
+("Sapiens","Yuval Noah Harari","History Science","Human history, civilization, evolution"),
+("Deep Work","Cal Newport","Productivity Education","Focus, concentration, deep learning")
+]
+book_df = pd.DataFrame(books, columns=["Name","Author","Genre","Description"])
 
-books = pd.DataFrame([
-    ["Atomic Habits","James Clear","Self Help"],
-    ["Rich Dad Poor Dad","Robert Kiyosaki","Finance"],
-    ["Wings of Fire","A.P.J. Abdul Kalam","Biography"],
-    ["Harry Potter","J.K. Rowling","Fantasy"],
-    ["Clean Code","Robert Martin","Programming"],
-    ["The Alchemist","Paulo Coelho","Fiction"]
-], columns=["Name","Author","Genre"])
+products = [
+("Gaming Laptop","Electronics Gaming","Gaming, coding, powerful processor",65000),
+("Student Laptop","Electronics Education","Study, coding, college, productivity",40000),
+("Wireless Headphones","Electronics Music","Music, wireless audio, travel",2500),
+("Smart Watch","Electronics Fitness","Fitness, notifications, health tracking",3000),
+("Running Shoes","Sports Fitness","Running, walking, exercise",2200),
+("Python Programming Book","Education Programming","Python, coding, learning",600),
+("Power Bank","Electronics Accessories","Charging, smartphone, travel",1200),
+("Tablet","Electronics Education","Reading, studying, video, productivity",18000)
+]
+product_df = pd.DataFrame(products, columns=["Name","Category","Description","Price (INR)"])
 
-products = pd.DataFrame([
-    ["Gaming Laptop","Electronics Gaming",65000],
-    ["Student Laptop","Electronics Education",40000],
-    ["Headphones","Electronics Music",2500],
-    ["Running Shoes","Sports Fitness",2200],
-    ["Smart Watch","Electronics Fitness",3000],
-    ["Python Book","Education Programming",600]
-], columns=["Name","Category","Price"])
-
-# Recommendation function
-def get_recommendations(df, columns, query, favorite, count):
+# ---------------- RECOMMENDATION ENGINE ----------------
+def recommend(df, columns, query, favorite, count):
     if df.empty:
         return pd.DataFrame()
 
     text = df[columns].fillna("").astype(str).agg(" ".join, axis=1)
-    vectorizer = TfidfVectorizer(stop_words="english")
+    vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
     matrix = vectorizer.fit_transform(text)
 
     if favorite != "None":
@@ -63,10 +73,7 @@ def get_recommendations(df, columns, query, favorite, count):
     if not query.strip():
         return pd.DataFrame()
 
-    scores = cosine_similarity(
-        vectorizer.transform([query]), matrix
-    ).flatten()
-
+    scores = cosine_similarity(vectorizer.transform([query]), matrix).ravel()
     result = df.copy()
     result["Similarity"] = scores
 
@@ -75,79 +82,148 @@ def get_recommendations(df, columns, query, favorite, count):
 
     return result.sort_values("Similarity", ascending=False).head(count)
 
-# Select category
-category = st.selectbox("Choose Category", ["Movies", "Books", "Products"])
+def show_results(results, category):
+    if results.empty:
+        st.warning("No matching items found. Try changing your filters or select a favorite.")
+        return
 
-if category == "Movies":
-    df = movies
-    genres = sorted(set(g for x in df["Genre"] for g in x.split()))
-    selected = st.multiselect("Choose genres", genres)
-    industry = st.selectbox("Industry", ["All", "Indian", "Hollywood"])
-    rating = st.slider("Minimum rating", 0.0, 10.0, 0.0, 0.5)
-    favorite = st.selectbox("Favorite movie", ["None"] + df["Name"].tolist())
-    columns = ["Genre", "Industry"]
-    query = " ".join(selected)
+    st.subheader("✨ Your Recommendations")
+    for _, item in results.iterrows():
+        with st.container(border=True):
+            st.markdown(f"### {item['Name']}")
 
-    filtered = df[df["Rating"] >= rating].copy()
-    if industry != "All":
-        filtered = filtered[filtered["Industry"] == industry]
-    if selected:
-        filtered = filtered[filtered["Genre"].apply(
-            lambda x: any(g in x.split() for g in selected)
-        )]
+            fields = {
+                "Movies": ["Industry","Genre","Language","IMDb Rating",
+                           "OTT Information","Dubbed Languages","Description"],
+                "Books": ["Author","Genre","Description"],
+                "Products": ["Category","Price (INR)","Description"]
+            }[category]
 
-elif category == "Books":
-    df = books
-    genres = sorted(df["Genre"].unique())
-    selected = st.multiselect("Choose interests", genres)
-    favorite = st.selectbox("Favorite book", ["None"] + df["Name"].tolist())
-    columns = ["Name", "Author", "Genre"]
-    query = " ".join(selected)
-    filtered = df.copy()
+            for field in fields:
+                if field in item.index:
+                    value = item[field]
+                    if field == "Price (INR)":
+                        value = f"₹{value:,}"
+                    if field == "IMDb Rating":
+                        value = f"{value}/10 (approx.)"
+                    st.write(f"**{field}:** {value}")
 
-    if selected:
-        filtered = filtered[filtered["Genre"].isin(selected)]
+            st.progress(min(float(item["Similarity"]), 1.0),
+                        text="Content similarity (not accuracy)")
+
+# ---------------- HOME PAGE ----------------
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+
+if st.session_state.page == "Home":
+    st.markdown("""
+    <div class="hero">
+        <h1>🎯 RecoVerse AI</h1>
+        <h3>Your Personal Recommendation Hub</h3>
+        <p>Discover movies, books and products based on your interests.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+    st.subheader("What would you like to discover?")
+    c1, c2, c3 = st.columns(3)
+
+    for col, name, emoji, desc in [
+        (c1,"Movies","🎬","Indian cinema and Hollywood"),
+        (c2,"Books","📚","Fiction, technology and self-help"),
+        (c3,"Products","🛍️","Technology, education and fitness")
+    ]:
+        with col:
+            with st.container(border=True):
+                st.markdown(f"## {emoji} {name}")
+                st.write(desc)
+                if st.button(f"Explore {name}", key=f"home_{name}"):
+                    st.session_state.page = name
+                    st.rerun()
 
 else:
-    df = products
-    budget = st.slider("Maximum budget (₹)", 500, 100000, 30000, 500)
-    categories = sorted(set(c for x in df["Category"] for c in x.split()))
-    selected = st.multiselect("Choose interests", categories)
-    favorite = st.selectbox("Favorite product", ["None"] + df["Name"].tolist())
-    columns = ["Name", "Category"]
-    query = " ".join(selected)
-    filtered = df[df["Price"] <= budget].copy()
+    if st.button("⬅️ Back to Home"):
+        st.session_state.page = "Home"
+        st.rerun()
 
-    if selected:
-        filtered = filtered[filtered["Category"].apply(
-            lambda x: any(c in x.split() for c in selected)
-        )]
+    category = st.session_state.page
+    st.title({"Movies":"🎬 Movie Recommendations",
+              "Books":"📚 Book Recommendations",
+              "Products":"🛍️ Product Recommendations"}[category])
 
-count = st.slider("Number of recommendations", 1, 5, 3)
+    if category == "Movies":
+        df = movie_df
+        c1, c2 = st.columns(2)
 
-if st.button("✨ Find Recommendations"):
-    results = get_recommendations(filtered, columns, query, favorite, count)
+        with c1:
+            industry = st.selectbox("Cinema", ["All","Indian","Hollywood"])
+            genres = sorted(set(g for x in df["Genre"] for g in x.split()))
+            selected = st.multiselect("Genres", genres)
+            languages = st.multiselect("Original language", sorted(df["Language"].unique()))
 
-    if results.empty:
-        st.warning("Please select an interest or a favorite item.")
+        with c2:
+            rating = st.slider("Minimum IMDb rating (approx.)", 0.0, 10.0, 0.0, 0.5)
+            dubbed = st.selectbox("Dubbed-language preference",
+                                  ["Any","Hindi","Tamil","Telugu","Kannada","Malayalam","English"])
+            favorite = st.selectbox("Favorite movie", ["None"] + df["Name"].tolist())
+
+        count = st.slider("Number of recommendations", 3, 8, 5)
+        filtered = df[df["IMDb Rating"] >= rating].copy()
+
+        if industry != "All":
+            filtered = filtered[filtered["Industry"] == industry]
+        if languages:
+            filtered = filtered[filtered["Language"].isin(languages)]
+        if selected:
+            filtered = filtered[filtered["Genre"].apply(
+                lambda x: any(g in x.split() for g in selected))]
+        if dubbed != "Any":
+            filtered = filtered[filtered["Dubbed Languages"].str.contains(
+                dubbed, case=False, na=False)]
+
+        query = " ".join(selected + ([] if dubbed == "Any" else [dubbed]))
+        columns = ["Genre","Description","Language","Industry","Dubbed Languages"]
+
+        if st.button("✨ Find Movies"):
+            show_results(recommend(filtered, columns, query, favorite, count), category)
+
+        st.info("OTT and dubbed-audio information may vary by region and can change. Ratings are sample values, not live data.")
+
+    elif category == "Books":
+        df = book_df
+        authors = st.multiselect("Authors (optional)", sorted(df["Author"].unique()))
+        genres = sorted(set(g for x in df["Genre"] for g in x.split()))
+        selected = st.multiselect("Book interests", genres)
+        favorite = st.selectbox("Favorite book", ["None"] + df["Name"].tolist())
+        count = st.slider("Number of recommendations", 3, 8, 5)
+
+        filtered = df.copy()
+        if authors:
+            filtered = filtered[filtered["Author"].isin(authors)]
+        if selected:
+            filtered = filtered[filtered["Genre"].apply(
+                lambda x: any(g in x.split() for g in selected))]
+
+        if st.button("✨ Find Books"):
+            show_results(recommend(filtered, ["Name","Author","Genre","Description"],
+                                   " ".join(selected), favorite, count), category)
+
     else:
-        st.subheader("Recommended for You")
-        for _, item in results.iterrows():
-            with st.container(border=True):
-                st.subheader(item["Name"])
+        df = product_df
+        categories = sorted(set(g for x in df["Category"] for g in x.split()))
+        selected = st.multiselect("Product interests", categories)
+        budget = st.slider("Maximum budget (₹)", 500, 100000, 30000, 500)
+        favorite = st.selectbox("Favorite product", ["None"] + df["Name"].tolist())
+        count = st.slider("Number of recommendations", 3, 8, 5)
 
-                for col in ["Genre", "Industry", "Rating", "Author", "Category", "Price"]:
-                    if col in item.index:
-                        value = item[col]
-                        if col == "Price":
-                            value = f"₹{value:,}"
-                        st.write(f"**{col}:** {value}")
+        filtered = df[df["Price (INR)"] <= budget].copy()
+        if selected:
+            filtered = filtered[filtered["Category"].apply(
+                lambda x: any(g in x.split() for g in selected))]
 
-                st.progress(
-                    min(float(item["Similarity"]), 1.0),
-                    text="Content similarity"
-                )
+        if st.button("✨ Find Products"):
+            show_results(recommend(filtered, ["Name","Category","Description"],
+                                   " ".join(selected), favorite, count), category)
 
 st.divider()
-st.caption("Built with Python, Streamlit, Pandas and Scikit-learn.")
-
+st.caption("RecoVerse AI | Python • Streamlit • Pandas • TF-IDF • Cosine Similarity")
