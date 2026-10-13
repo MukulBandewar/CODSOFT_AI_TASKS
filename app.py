@@ -5,82 +5,26 @@ from datetime import datetime
 import streamlit as st
 from google import genai
 
-# ---------------- PRE-PAGE DESIGN & INITIALIZATION ----------------
-# Chat history initialized early to avoid rendering blank screens
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# ---------------- PAGE CONFIG & CUSTOM THEME ----------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="RuleBot AI",
     page_icon="🤖",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="centered"
 )
 
-# Custom CSS for Premium Dark/Modern UI Look
-st.markdown("""
-<style>
-    /* Main App Background & Font */
-    .stApp {
-        background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-        color: #f3f4f6;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-    
-    /* Title Styling */
-    .main-title {
-        text-align: center;
-        font-size: 3rem !important;
-        font-weight: 800;
-        background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
-    }
-    .main-caption {
-        text-align: center;
-        color: #9ca3af;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-    
-    /* Footer & Buttons Styling */
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 600 !important;
-        padding: 0.5rem 1rem !important;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-    }
-    
-    /* Divider lines styling */
-    hr {
-        border-color: #374151 !important;
-        margin: 2rem 0 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Beautiful Header Section
-st.markdown('<h1 class="main-title">🤖 RuleBot AI</h1>', unsafe_allow_html=True)
-st.markdown('<p class="main-caption">Hybrid Architecture: Smart Rules + Gemini Intelligence</p>', unsafe_allow_html=True)
+st.title("🤖 RuleBot AI")
+st.caption("Rule-based chatbot + Gemini AI")
 
 # ---------------- API KEY ----------------
 def get_api_key():
+    # First try Streamlit Secrets
     try:
         key = st.secrets.get("GEMINI_API_KEY")
         if key:
             return str(key).strip()
     except Exception:
         pass
+    # Then try environment variable
     return os.getenv("GEMINI_API_KEY", "").strip()
 
 # ---------------- RULE-BASED RESPONSES ----------------
@@ -139,6 +83,7 @@ def get_rule_response(user):
             "I can answer basic questions, tell jokes, show the date "
             "and time, and answer other questions using Gemini AI."
         )
+    
     for pattern, replies in responses.items():
         if re.search(pattern, user):
             return random.choice(replies)
@@ -152,12 +97,16 @@ def get_ai_response():
             "⚠️ Gemini API key is missing. Add GEMINI_API_KEY "
             "to Streamlit Secrets or your environment variables."
         )
+    
     try:
         client = genai.Client(api_key=api_key)
+        
+        # Include recent chat messages for context
         history = st.session_state.messages[-12:]
         conversation_text = "\n".join(
             f"{'User' if msg['role'] == 'user' else 'RuleBot'}: "
-            f"{msg['content']}" for msg in history
+            f"{msg['content']}"
+            for msg in history
         )
         
         system_instruction = (
@@ -168,10 +117,13 @@ def get_ai_response():
         
         full_prompt = f"Conversation history:\n{conversation_text}\n\nAnswer the latest user message."
         
+        # models list updated to stable ones
         models = ["gemini-2.5-flash", "gemini-2.5-pro"]
         last_error = None
+        
         for model_name in models:
             try:
+                # Fixed: passing model, contents and config correctly
                 result = client.models.generate_content(
                     model=model_name,
                     contents=full_prompt,
@@ -183,22 +135,26 @@ def get_ai_response():
                 last_error = f"{model_name} returned an empty response."
             except Exception as error:
                 last_error = f"{model_name}: {error}"
+        
         st.error(f"Gemini API error: {last_error}")
         return (
             "Sorry, Gemini could not answer. Please check the error "
             "shown above, your API key, model access, and API quota."
         )
+        
     except Exception as error:
         st.error(f"Gemini setup error: {error}")
         return "Sorry, the AI service could not be started."
 
-# ---------------- CHAT HISTORY RENDER ----------------
-# Display old chat messages cleanly
+# ---------------- CHAT HISTORY ----------------
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ---------------- CHAT INPUT & PROCESSING ----------------
+# ---------------- CHAT INPUT ----------------
 if user_prompt := st.chat_input("Ask me anything..."):
     user_prompt = user_prompt.strip()
     if not user_prompt:
@@ -206,26 +162,32 @@ if user_prompt := st.chat_input("Ask me anything..."):
         st.stop()
         
     # Save and display user message
-    st.session_state.messages.append({"role": "user", "content": user_prompt})
+    st.session_state.messages.append({
+        "role": "user",
+        "content": user_prompt
+    })
     with st.chat_message("user"):
         st.markdown(user_prompt)
         
     # Try rules first, Gemini second
     with st.chat_message("assistant"):
-        with st.spinner("✨ RuleBot is thinking..."):
+        with st.spinner("RuleBot is thinking..."):
             reply = get_rule_response(user_prompt.lower())
             if reply is None:
                 reply = get_ai_response()
             st.markdown(reply)
             
-    st.session_state.messages.append({"role": "assistant", "content": reply})
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": reply
+    })
 
-# ---------------- SIDEBAR / CLEAR CHAT ----------------
-# UI Layout Improvement: Visual Divider and Clear Chat button inside a clean footer layout
+# ---------------- CLEAR CHAT ----------------
+# UI Improvement: Visual divider
 st.markdown("---")
-col1, col2, col3 = st.columns([2, 2, 1])
-with col3:
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.rerun()
+if st.button("🗑️ Clear Chat"):
+    st.session_state.messages = []
+    st.slots = {} # clear output
+    st.invalidate() if hasattr(st, "invalidate") else None
+    st.rerun()
 
