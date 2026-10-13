@@ -62,7 +62,7 @@ def check_winner(board):
     return None
 
 
-# ---------- MINIMAX AI ----------
+# ---------- MINIMAX AI (FIXED ALPHA-BETA) ----------
 def minimax(board, is_ai, depth=0, alpha=-100, beta=100):
     result = check_winner(board)
 
@@ -77,13 +77,10 @@ def minimax(board, is_ai, depth=0, alpha=-100, beta=100):
 
     if is_ai:
         best_score = -100
-
         for i in range(9):
             if board[i] is None:
                 board[i] = "O"
-                score, _ = minimax(
-                    board, False, depth + 1, alpha, beta
-                )
+                score, _ = minimax(board, False, depth + 1, alpha, beta)
                 board[i] = None
 
                 if score > best_score:
@@ -91,32 +88,26 @@ def minimax(board, is_ai, depth=0, alpha=-100, beta=100):
                     best_move = i
 
                 alpha = max(alpha, best_score)
-
-                if alpha >= beta:
-                    break
-
+                if beta <= alpha:
+                    break  # Beta cut-off
         return best_score, best_move
 
-    best_score = 100
+    else:
+        best_score = 100
+        for i in range(9):
+            if board[i] is None:
+                board[i] = "X"
+                score, _ = minimax(board, True, depth + 1, alpha, beta)
+                board[i] = None
 
-    for i in range(9):
-        if board[i] is None:
-            board[i] = "X"
-            score, _ = minimax(
-                board, True, depth + 1, alpha, beta
-            )
-            board[i] = None
+                if score < best_score:
+                    best_score = score
+                    best_move = i
 
-            if score < best_score:
-                best_score = score
-                best_move = i
-
-            beta = min(beta, best_score)
-
-            if alpha >= beta:
-                break
-
-    return best_score, best_move
+                beta = min(beta, best_score)
+                if beta <= alpha:
+                    break  # Alpha cut-off
+        return best_score, best_move
 
 
 # ---------- GAME STATE ----------
@@ -182,16 +173,13 @@ for row in range(3):
         elif value == "O":
             label = "⭕ O"
         else:
-            label = "＋"
+            label = " "  # '＋' என்பதற்கு பதிலாக வெற்று இடம் நன்றாக இருக்கும்
 
         if cols[col].button(
             label,
             key=f"cell_{index}",
             use_container_width=True,
-            disabled=(
-                value is not None or
-                st.session_state.game_over
-            )
+            disabled=(value is not None or st.session_state.game_over)
         ):
             # Human move
             board[index] = "X"
@@ -211,9 +199,7 @@ for row in range(3):
                 if result is not None:
                     finish_game(result)
                 else:
-                    st.session_state.message = (
-                        "Your turn! Choose an empty square."
-                    )
+                    st.session_state.message = "Your turn! Choose an empty square."
 
             st.rerun()
 
@@ -245,8 +231,7 @@ with st.expander("🧠 How does the AI work?"):
     - Minimax searches possible future moves.
     - The AI plays as O and the human plays as X.
     - Alpha-Beta Pruning skips unnecessary branches.
-    - The AI chooses optimal moves and cannot lose
-      when it plays correctly.
+    - The AI chooses optimal moves and cannot lose when it plays correctly.
     """)
 
 st.caption("Built with Python and Streamlit 🎮")
