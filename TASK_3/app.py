@@ -4,18 +4,13 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ==================================================
-# PAGE CONFIG
-# ==================================================
+
 st.set_page_config(
     page_title="RecoVerse AI",
     page_icon="🎯",
     layout="wide"
 )
 
-# ==================================================
-# DESIGN
-# ==================================================
 st.markdown("""
 <style>
 .stApp {
@@ -44,10 +39,7 @@ div.stButton > button {
 </style>
 """, unsafe_allow_html=True)
 
-# ==================================================
-# SAMPLE DATASET
-# Ratings are approximate; streaming details need verification.
-# ==================================================
+
 movies = [
     ("3 Idiots", "Indian", "Comedy Drama", "Hindi",
      8.4, "Prime Video / regional availability varies",
@@ -274,9 +266,6 @@ product_df = pd.DataFrame(
     columns=["Name", "Category", "Description", "Price (INR)"]
 )
 
-# ==================================================
-# CONTENT-BASED RECOMMENDATION ENGINE
-# ==================================================
 def recommend(df, text_columns, preference, selected_name, count):
     df = df.copy()
 
@@ -317,9 +306,6 @@ def recommend(df, text_columns, preference, selected_name, count):
         "Similarity", ascending=False
     ).head(count)
 
-# ==================================================
-# HOME PAGE
-# ==================================================
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
@@ -371,9 +357,7 @@ if st.session_state.page == "Home":
         "This demo does not guarantee recommendation accuracy."
     )
 
-# ==================================================
-# CATEGORY INTERFACE
-# ==================================================
+
 else:
     if st.button("⬅️ Back to Home"):
         st.session_state.page = "Home"
