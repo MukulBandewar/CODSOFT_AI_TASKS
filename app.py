@@ -3,8 +3,8 @@ import re
 import os
 from datetime import datetime
 import streamlit as st
-from google import genai
-from google.genai import types  # 🔴 API பிழையைச் சரிசெய்ய இது அவசியம்
+from google import genarativeai
+from google.genarativeai import types  # 🔴 API பிழையைச் சரிசெய்ய இது அவசியம்
 
 # ---------------- PAGE CONFIG & CUSTOM THEME ----------------
 st.set_page_config(
