@@ -1,7 +1,8 @@
 
 import streamlit as st
+import torch
 from PIL import Image
-from transformers import pipeline
+from transformers import BlipProcessor, BlipForConditionalGeneration
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -10,7 +11,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# ---------------- CUSTOM DESIGN ----------------
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
 <style>
 .stApp {
@@ -25,13 +26,8 @@ h1, h2, h3, p, label {
     background: #00d4aa;
     color: #101827;
     border-radius: 12px;
-    border: none;
     padding: 12px;
     font-weight: bold;
-}
-.stButton > button:hover {
-    background: #00b894;
-    color: white;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -40,16 +36,18 @@ h1, h2, h3, p, label {
 st.title("🖼️ Image Captioning AI")
 st.write("Upload an image and let AI describe it!")
 st.caption("Powered by Python, Streamlit and BLIP AI")
-
 st.divider()
 
 # ---------------- LOAD MODEL ----------------
-@st.cache_resource(show_spinner=False)
+@st.cache_resource
 def load_model():
-    return pipeline(
-        "image-to-text",
-        model="Salesforce/blip-image-captioning-base"
-    )
+    model_name = "Salesforce/blip-image-captioning-base"
+
+    processor = BlipProcessor.from_pretrained(model_name)
+    model = BlipForConditionalGeneration.from_pretrained(model_name)
+
+    model.eval()
+    return processor, model
 
 # ---------------- IMAGE UPLOAD ----------------
 uploaded_file = st.file_uploader(
@@ -68,25 +66,31 @@ if uploaded_file is not None:
         )
 
         if st.button("✨ Generate Caption"):
-            with st.spinner(
-                "AI is analyzing your image..."
-            ):
-                model = load_model()
-                result = model(
-                    image,
-                    max_new_tokens=50
+            with st.spinner("AI is analyzing your image..."):
+                processor, model = load_model()
+
+                inputs = processor(
+                    images=image,
+                    return_tensors="pt"
                 )
-                caption = result[0]["generated_text"]
 
-            st.success("Caption Generated Successfully!")
+                with torch.no_grad():
+                    output = model.generate(
+                        **inputs,
+                        max_new_tokens=50
+                    )
 
+                caption = processor.decode(
+                    output[0],
+                    skip_special_tokens=True
+                )
+
+            st.success("Caption generated successfully!")
             st.subheader("📝 Generated Caption")
-            st.markdown(
-                f"**{caption[:1].upper() + caption[1:]}**"
-            )
+            st.write(caption.capitalize())
 
             st.download_button(
-                label="📥 Download Caption",
+                "📥 Download Caption",
                 data=caption,
                 file_name="image_caption.txt",
                 mime="text/plain"
@@ -94,12 +98,10 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error("Unable to generate caption.")
-        st.caption(f"Error details: {e}")
+        st.exception(e)
 
 else:
     st.info("👆 Upload an image to get started.")
 
-# ---------------- FOOTER ----------------
 st.divider()
 st.caption("AI/ML Project | Image Captioning AI ❤️")
-
