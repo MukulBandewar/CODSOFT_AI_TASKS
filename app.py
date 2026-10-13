@@ -4,27 +4,78 @@ import os
 from datetime import datetime
 import streamlit as st
 from google import genai
+from google.genai import types  # 🔴 API பிழையைச் சரிசெய்ய இது அவசியம்
 
-# ---------------- PAGE CONFIG ----------------
+# ---------------- PAGE CONFIG & CUSTOM THEME ----------------
 st.set_page_config(
     page_title="RuleBot AI",
     page_icon="🤖",
     layout="centered"
 )
 
-st.title("🤖 RuleBot AI")
-st.caption("Rule-based chatbot + Gemini AI")
+# அனிமேஷன் மற்றும் பிரீமியம் தோற்றத்திற்கான பிரத்யேக CSS டிசைன்
+st.markdown("""
+<style>
+    /* ஆப் பின்னணி மற்றும் எழுத்து வடிவமைப்பு */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #f8fafc;
+        font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* பிரீமியம் கிரேடியன்ட் தலைப்பு */
+    .main-title {
+        text-align: center;
+        font-size: 3.2rem !important;
+        font-weight: 800;
+        background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0px;
+    }
+    .main-caption {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* க்ளியர் சாட் பட்டன் வடிவமைப்பு */
+    .stButton>button {
+        width: 100%;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 600 !important;
+        padding: 0.6rem 1rem !important;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* பிரிப்பு கோடு */
+    hr {
+        border-color: #334155 !important;
+        margin: 2rem 0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# அழகான ஹெடர் பகுதி
+st.markdown('<h1 class="main-title">🤖 RuleBot AI</h1>', unsafe_allow_html=True)
+st.markdown('<p class="main-caption">Rule-based chatbot + Gemini AI Intelligence</p>', unsafe_allow_html=True)
 
 # ---------------- API KEY ----------------
 def get_api_key():
-    # First try Streamlit Secrets
     try:
         key = st.secrets.get("GEMINI_API_KEY")
         if key:
             return str(key).strip()
     except Exception:
         pass
-    # Then try environment variable
     return os.getenv("GEMINI_API_KEY", "").strip()
 
 # ---------------- RULE-BASED RESPONSES ----------------
@@ -101,7 +152,7 @@ def get_ai_response():
     try:
         client = genai.Client(api_key=api_key)
         
-        # Include recent chat messages for context
+        # சமீபத்திய அரட்டை விவரங்களை எடுத்தல்
         history = st.session_state.messages[-12:]
         conversation_text = "\n".join(
             f"{'User' if msg['role'] == 'user' else 'RuleBot'}: "
@@ -109,25 +160,28 @@ def get_ai_response():
             for msg in history
         )
         
-        system_instruction = (
-            "You are RuleBot AI, a friendly and helpful assistant. "
-            "Answer the user's latest message accurately in simple language. "
-            "Use examples when useful. If you are unsure, say so."
+        # 🔴 புதிய SDK-க்கு ஏற்றவாறு types.GenerateContentConfig முறையாக மாற்றப்பட்டுள்ளது
+        config = types.GenerateContentConfig(
+            system_instruction=(
+                "You are RuleBot AI, a friendly and helpful assistant. "
+                "Answer the user's latest message accurately in simple language. "
+                "Use examples when useful. If you are unsure, say so."
+            )
         )
         
         full_prompt = f"Conversation history:\n{conversation_text}\n\nAnswer the latest user message."
         
-        # models list updated to stable ones
+        # தற்போதைய நிலையான மாடல்கள்
         models = ["gemini-2.5-flash", "gemini-2.5-pro"]
         last_error = None
         
         for model_name in models:
             try:
-                # Fixed: passing model, contents and config correctly
+                # 🔴 config அளவுரு திருத்தப்பட்டுள்ளது
                 result = client.models.generate_content(
                     model=model_name,
                     contents=full_prompt,
-                    config={"system_instruction": system_instruction}
+                    config=config
                 )
                 answer = getattr(result, "text", None)
                 if answer and answer.strip():
@@ -161,7 +215,6 @@ if user_prompt := st.chat_input("Ask me anything..."):
         st.warning("Please enter a message.")
         st.stop()
         
-    # Save and display user message
     st.session_state.messages.append({
         "role": "user",
         "content": user_prompt
@@ -169,9 +222,8 @@ if user_prompt := st.chat_input("Ask me anything..."):
     with st.chat_message("user"):
         st.markdown(user_prompt)
         
-    # Try rules first, Gemini second
     with st.chat_message("assistant"):
-        with st.spinner("RuleBot is thinking..."):
+        with st.spinner("✨ RuleBot is thinking..."):
             reply = get_rule_response(user_prompt.lower())
             if reply is None:
                 reply = get_ai_response()
@@ -183,11 +235,11 @@ if user_prompt := st.chat_input("Ask me anything..."):
     })
 
 # ---------------- CLEAR CHAT ----------------
-# UI Improvement: Visual divider
 st.markdown("---")
-if st.button("🗑️ Clear Chat"):
-    st.session_state.messages = []
-    st.slots = {} # clear output
-    st.invalidate() if hasattr(st, "invalidate") else None
-    st.rerun()
+col1, col2, col3 = st.columns([1, 1, 1])
+with col3:
+    if st.button("🗑️ Clear Chat"):
+        st.session_state.messages = []
+        st.rerun()
+
 
