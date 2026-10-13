@@ -173,7 +173,7 @@ for row in range(3):
         elif value == "O":
             label = "⭕ O"
         else:
-            label = " "  # '＋' என்பதற்கு பதிலாக வெற்று இடம் நன்றாக இருக்கும்
+            label = " "  # Empty space for empty cells
 
         if cols[col].button(
             label,
@@ -235,6 +235,5 @@ with st.expander("🧠 How does the AI work?"):
     """)
 
 st.caption("Built with Python and Streamlit 🎮")
-
 
 
