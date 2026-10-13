@@ -1,46 +1,27 @@
 
-import os
-import csv
-import uuid
-import io
-
 import streamlit as st
-import torch
-from PIL import Image
-from torch.utils.data import Dataset, DataLoader
-from transformers import (
-    BlipProcessor,
-    BlipForConditionalGeneration
-)
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# ---------------- CONFIG ----------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Self-Improving Image Caption AI",
-    page_icon="🤖",
-    layout="centered"
+    page_title="Smart Recommendation System",
+    page_icon="🎯",
+    layout="wide"
 )
 
-DATA_DIR = "feedback_images"
-CSV_FILE = "feedback.csv"
-MODEL_DIR = "improved_blip_model"
-BASE_MODEL = "Salesforce/blip-image-captioning-base"
-
-os.makedirs(DATA_DIR, exist_ok=True)
-
-DEVICE = torch.device(
-    "cuda" if torch.cuda.is_available() else "cpu"
-)
-
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(135deg, #101827, #263b5e);
+    background: linear-gradient(135deg, #101827, #243b55);
     color: white;
 }
 h1, h2, h3, p, label {
     color: white !important;
 }
-.stButton > button {
+div.stButton > button {
     width: 100%;
     border-radius: 10px;
     padding: 10px;
@@ -49,283 +30,240 @@ h1, h2, h3, p, label {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🤖 Self-Improving Image Caption AI")
-st.write("Generate captions, correct mistakes and fine-tune AI.")
-st.caption(f"Running on: {DEVICE}")
+# ---------------- DATASET ----------------
+data = {
+    "Movies": [
+        ("The Dark Knight", "Action Crime Thriller",
+         "Batman fights crime and protects Gotham"),
+        ("Avengers Endgame", "Action Adventure Sci-Fi",
+         "Superheroes unite to save the universe"),
+        ("Interstellar", "Sci-Fi Drama Adventure",
+         "Astronauts travel through space to save humanity"),
+        ("The Notebook", "Romance Drama",
+         "A beautiful love story about relationships"),
+        ("Titanic", "Romance Drama History",
+         "Romantic story aboard a famous ship"),
+        ("The Conjuring", "Horror Mystery Thriller",
+         "A family faces paranormal activities"),
+        ("The Hangover", "Comedy",
+         "Friends experience hilarious adventures"),
+        ("Finding Nemo", "Animation Adventure Family",
+         "A fish travels the ocean to find his son"),
+        ("The Matrix", "Sci-Fi Action",
+         "A hacker discovers the truth about reality"),
+        ("John Wick", "Action Crime Thriller",
+         "A former assassin seeks revenge"),
+    ],
+    "Books": [
+        ("Atomic Habits", "Self-Help Productivity",
+         "Build good habits and improve daily life"),
+        ("Rich Dad Poor Dad", "Finance Business",
+         "Learn money management and financial literacy"),
+        ("The Alchemist", "Fiction Adventure",
+         "A young shepherd follows his dreams"),
+        ("Harry Potter", "Fantasy Adventure",
+         "A young wizard studies magic and fights evil"),
+        ("The Psychology of Money", "Finance Psychology",
+         "Understand behavior and decisions about money"),
+        ("Deep Work", "Productivity Self-Help",
+         "Improve focus and concentration"),
+        ("Wings of Fire", "Biography Motivation",
+         "The inspiring life story of APJ Abdul Kalam"),
+        ("Ikigai", "Self-Help Philosophy",
+         "Discover purpose and a meaningful life"),
+        ("Think and Grow Rich", "Business Motivation",
+         "Principles of success and achievement"),
+        ("Sherlock Holmes", "Mystery Fiction",
+         "A detective solves challenging mysteries"),
+    ],
+    "Products": [
+        ("Gaming Laptop", "Electronics Gaming",
+         "Powerful laptop for gaming and programming"),
+        ("Wireless Headphones", "Electronics Music",
+         "Wireless audio headphones with clear sound"),
+        ("Smart Watch", "Electronics Fitness",
+         "Track health activities and notifications"),
+        ("Running Shoes", "Sports Fitness",
+         "Comfortable shoes for running and exercise"),
+        ("Python Programming Book", "Education Programming",
+         "Learn Python coding and software development"),
+        ("Mechanical Keyboard", "Electronics Gaming",
+         "Mechanical keys for typing and gaming"),
+        ("Yoga Mat", "Fitness Wellness",
+         "Mat for yoga stretching and exercise"),
+        ("Bluetooth Speaker", "Electronics Music",
+         "Portable speaker for wireless music"),
+        ("Travel Backpack", "Travel Accessories",
+         "Spacious backpack for travel and daily use"),
+        ("Digital Camera", "Electronics Photography",
+         "Capture photographs and high-quality videos"),
+    ]
+}
 
-# ---------------- LOAD MODEL ----------------
-@st.cache_resource
-def load_model():
-    model_path = (
-        MODEL_DIR
-        if os.path.isfile(os.path.join(MODEL_DIR, "config.json"))
-        else BASE_MODEL
+# ---------------- RECOMMENDATION FUNCTION ----------------
+def recommend_items(category, preference, favorite, count):
+    df = pd.DataFrame(
+        data[category],
+        columns=["Name", "Genre", "Description"]
     )
 
-    processor = BlipProcessor.from_pretrained(model_path)
-    model = BlipForConditionalGeneration.from_pretrained(
-        model_path
-    )
-    model.to(DEVICE)
-    model.eval()
-
-    return processor, model
-
-
-# ---------------- TRAINING DATASET ----------------
-class CaptionDataset(Dataset):
-    def __init__(self, records):
-        self.records = records
-
-    def __len__(self):
-        return len(self.records)
-
-    def __getitem__(self, index):
-        row = self.records[index]
-
-        with Image.open(row["image_path"]) as img:
-            image = img.convert("RGB").copy()
-
-        caption = row["target_caption"].strip()
-        return image, caption
-
-
-def collate_batch(batch, processor):
-    images, captions = zip(*batch)
-
-    encoded = processor(
-        images=list(images),
-        text=list(captions),
-        padding="max_length",
-        truncation=True,
-        max_length=40,
-        return_tensors="pt"
+    # Combine item features
+    df["Features"] = (
+        df["Genre"] + " " + df["Description"]
     )
 
-    labels = encoded["input_ids"].clone()
-    labels[labels == processor.tokenizer.pad_token_id] = -100
+    # TF-IDF feature extraction
+    vectorizer = TfidfVectorizer(stop_words="english")
+    matrix = vectorizer.fit_transform(df["Features"])
 
-    return {
-        "pixel_values": encoded["pixel_values"],
-        "input_ids": encoded["input_ids"],
-        "attention_mask": encoded["attention_mask"],
-        "labels": labels
-    }
+    # User preference vector
+    user_text = preference
+
+    if favorite != "None":
+        favorite_description = df.loc[
+            df["Name"] == favorite, "Features"
+        ]
+
+        if not favorite_description.empty:
+            user_text += " " + favorite_description.iloc[0]
+
+    user_vector = vectorizer.transform([user_text])
+
+    # Cosine similarity with user preferences
+    scores = cosine_similarity(user_vector, matrix).flatten()
+
+    df["Score"] = scores
+
+    # Do not recommend the selected favorite item itself
+    if favorite != "None":
+        df = df[df["Name"] != favorite]
+
+    df = df.sort_values("Score", ascending=False)
+
+    return df.head(count)
 
 
-# ---------------- GENERATE CAPTION ----------------
-uploaded = st.file_uploader(
-    "📤 Upload an image",
-    type=["jpg", "jpeg", "png", "webp"]
+# ---------------- HEADER ----------------
+st.title("🎯 Smart Recommendation System")
+st.write(
+    "Discover movies, books and products "
+    "based on your interests."
 )
 
-if uploaded:
-    image = Image.open(uploaded).convert("RGB")
-    st.image(image, caption="Your image", use_container_width=True)
-
-    if st.button("✨ Generate Caption"):
-        try:
-            with st.spinner("Analyzing image..."):
-                processor, model = load_model()
-                inputs = processor(
-                    images=image,
-                    return_tensors="pt"
-                ).to(DEVICE)
-
-                model.eval()
-                with torch.no_grad():
-                    output = model.generate(
-                        **inputs,
-                        max_new_tokens=40
-                    )
-
-                caption = processor.decode(
-                    output[0],
-                    skip_special_tokens=True
-                )
-
-                st.session_state["caption"] = caption
-                st.session_state["image_bytes"] = uploaded.getvalue()
-
-        except Exception as e:
-            st.error(f"Caption generation failed: {e}")
-
-# ---------------- FEEDBACK ----------------
-if "caption" in st.session_state:
-    st.subheader("📝 AI Caption")
-    st.info(st.session_state["caption"])
-
-    feedback = st.radio(
-        "Is the caption correct?",
-        ["Correct", "Incorrect"],
-        key="feedback_choice"
-    )
-
-    corrected = st.session_state["caption"]
-
-    if feedback == "Incorrect":
-        corrected = st.text_area(
-            "Enter the correct image caption",
-            placeholder="Describe what is actually visible in the image.",
-            key="corrected_caption"
-        )
-
-    if st.button("💾 Save Feedback"):
-        target = corrected.strip()
-
-        if not target:
-            st.warning("Please enter a correct caption.")
-        else:
-            try:
-                image_id = uuid.uuid4().hex
-                image_path = os.path.join(
-                    DATA_DIR, f"{image_id}.jpg"
-                )
-
-                Image.open(
-                    io.BytesIO(st.session_state["image_bytes"])
-                ).convert("RGB").save(image_path, "JPEG")
-
-                exists = os.path.exists(CSV_FILE)
-
-                with open(
-                    CSV_FILE, "a", newline="", encoding="utf-8"
-                ) as file:
-                    writer = csv.DictWriter(
-                        file,
-                        fieldnames=[
-                            "image_path",
-                            "generated_caption",
-                            "feedback",
-                            "target_caption"
-                        ]
-                    )
-
-                    if not exists:
-                        writer.writeheader()
-
-                    writer.writerow({
-                        "image_path": image_path,
-                        "generated_caption": st.session_state["caption"],
-                        "feedback": feedback,
-                        "target_caption": target
-                    })
-
-                st.success("Feedback saved as training data!")
-
-                del st.session_state["caption"]
-                del st.session_state["image_bytes"]
-
-            except Exception as e:
-                st.error(f"Could not save feedback: {e}")
-
-# ---------------- TRAIN MODEL ----------------
 st.divider()
-st.subheader("🧠 Improve AI with Feedback")
 
-records = []
+# ---------------- SIDEBAR ----------------
+st.sidebar.header("⚙️ Recommendation Settings")
 
-if os.path.exists(CSV_FILE):
-    try:
-        with open(CSV_FILE, newline="", encoding="utf-8") as file:
-            for row in csv.DictReader(file):
-                if (
-                    row.get("target_caption", "").strip()
-                    and os.path.isfile(row.get("image_path", ""))
-                ):
-                    records.append(row)
-    except Exception as e:
-        st.error(f"Could not read training data: {e}")
-
-st.write(f"Saved training examples: **{len(records)}**")
-st.caption(
-    "For useful fine-tuning, collect many diverse, accurate "
-    "image-caption pairs. A few examples are only a small start."
+category = st.sidebar.selectbox(
+    "Select Category",
+    ["Movies", "Books", "Products"]
 )
 
-epochs = st.select_slider(
-    "Training epochs",
-    options=[1, 2, 3],
-    value=1
+category_preferences = {
+    "Movies": [
+        "Action", "Adventure", "Comedy", "Crime",
+        "Drama", "Fantasy", "Horror", "Mystery",
+        "Romance", "Sci-Fi", "Thriller", "Animation"
+    ],
+    "Books": [
+        "Self-Help", "Productivity", "Finance",
+        "Business", "Fiction", "Adventure", "Fantasy",
+        "Biography", "Motivation", "Mystery",
+        "Programming", "Psychology", "Philosophy"
+    ],
+    "Products": [
+        "Electronics", "Gaming", "Music", "Fitness",
+        "Sports", "Education", "Programming",
+        "Travel", "Accessories", "Photography", "Wellness"
+    ]
+}
+
+df_current = pd.DataFrame(
+    data[category],
+    columns=["Name", "Genre", "Description"]
 )
 
-if st.button("🚀 Improve AI"):
-    if len(records) < 2:
-        st.warning("Save at least 2 image-caption examples first.")
+selected_preferences = st.sidebar.multiselect(
+    "Choose your interests",
+    category_preferences[category]
+)
+
+favorite = st.sidebar.selectbox(
+    "Choose a favorite item (optional)",
+    ["None"] + df_current["Name"].tolist()
+)
+
+count = st.sidebar.slider(
+    "Number of recommendations",
+    3, 10, 5
+)
+
+# ---------------- MAIN CONTENT ----------------
+col1, col2 = st.columns([2, 1])
+
+with col1:
+    st.subheader(f"✨ Explore {category}")
+    st.write(
+        "Choose your interests and discover "
+        "items that match your preferences."
+    )
+
+    if st.button("🔍 Recommend For Me"):
+        preference_text = " ".join(selected_preferences)
+
+        if not preference_text and favorite == "None":
+            st.warning(
+                "Please select an interest or a favorite item."
+            )
+        else:
+            results = recommend_items(
+                category,
+                preference_text,
+                favorite,
+                count
+            )
+
+            st.session_state["results"] = results
+            st.session_state["result_category"] = category
+
+with col2:
+    st.subheader("📊 About the AI")
+    st.write("**Algorithm:** Content-Based Filtering")
+    st.write("**Feature extraction:** TF-IDF")
+    st.write("**Similarity:** Cosine Similarity")
+    st.write("**Categories:** Movies, Books, Products")
+
+# ---------------- RESULTS ----------------
+if (
+    "results" in st.session_state
+    and st.session_state.get("result_category") == category
+):
+    st.divider()
+    st.subheader(f"🎁 Recommended {category}")
+
+    results = st.session_state["results"]
+
+    if results.empty:
+        st.info("No matching items found.")
     else:
-        try:
-            processor, model = load_model()
-            model.train()
+        cols = st.columns(2)
 
-            dataset = CaptionDataset(records)
-            loader = DataLoader(
-                dataset,
-                batch_size=1,
-                shuffle=True,
-                collate_fn=lambda batch: collate_batch(
-                    batch, processor
-                )
-            )
+        for i, (_, item) in enumerate(results.iterrows()):
+            with cols[i % 2]:
+                with st.container(border=True):
+                    st.markdown(f"### ⭐ {item['Name']}")
+                    st.write(f"**Category:** {item['Genre']}")
+                    st.write(item["Description"])
 
-            optimizer = torch.optim.AdamW(
-                model.parameters(),
-                lr=2e-5
-            )
-
-            progress = st.progress(0)
-            status = st.empty()
-            total_steps = epochs * len(loader)
-            step = 0
-            last_loss = 0.0
-
-            for epoch in range(epochs):
-                for batch in loader:
-                    batch = {
-                        key: value.to(DEVICE)
-                        for key, value in batch.items()
-                    }
-
-                    optimizer.zero_grad()
-
-                    outputs = model(**batch)
-                    loss = outputs.loss
-                    loss.backward()
-
-                    torch.nn.utils.clip_grad_norm_(
-                        model.parameters(), 1.0
-                    )
-                    optimizer.step()
-
-                    last_loss = loss.item()
-                    step += 1
-                    progress.progress(step / total_steps)
-                    status.write(
-                        f"Epoch {epoch + 1}/{epochs} | "
-                        f"Step {step}/{total_steps} | "
-                        f"Loss: {last_loss:.4f}"
+                    score = float(item["Score"])
+                    st.progress(
+                        max(0.0, min(1.0, score)),
+                        text=f"Content similarity: {score:.0%}"
                     )
 
-            model.eval()
-            os.makedirs(MODEL_DIR, exist_ok=True)
-            model.save_pretrained(MODEL_DIR)
-            processor.save_pretrained(MODEL_DIR)
-
-            st.cache_resource.clear()
-
-            st.success(
-                "Fine-tuning completed! The updated model was saved."
-            )
-            st.write(f"Final training loss: {last_loss:.4f}")
-            st.info(
-                "Generate a new caption to test the saved model. "
-                "Lower training loss alone does not guarantee "
-                "better captions on unseen images."
-            )
-
-        except Exception as e:
-            st.error(f"Training failed: {e}")
-            st.info(
-                "Try fewer examples or epochs, check available "
-                "RAM, and ensure the model downloaded correctly."
-            )
+st.divider()
+st.caption(
+    "Built with Python, Streamlit, Pandas and Scikit-learn"
+)
 
