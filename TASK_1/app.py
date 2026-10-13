@@ -5,23 +5,19 @@ from datetime import datetime
 import streamlit as st
 import google.generativeai as genai
 
-# ---------------- PAGE CONFIG & CUSTOM THEME ----------------
 st.set_page_config(
     page_title="RuleBot AI",
     page_icon="🤖",
     layout="centered"
 )
 
-# அனிமேஷன் மற்றும் பிரீமியம் தோற்றத்திற்கான பிரத்யேக CSS டிசைன்
 st.markdown("""
 <style>
-/* ஆப் பின்னணி மற்றும் எழுத்து வடிவமைப்பு */
 .stApp {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #f8fafc;
     font-family: 'Segoe UI', Roboto, sans-serif;
 }
-/* பிரீமியம் கிரேடியன்ட் தலைப்பு */
 .main-title {
     text-align: center;
     font-size: 3.2rem !important;
@@ -37,7 +33,6 @@ st.markdown("""
     font-size: 1.1rem;
     margin-bottom: 2rem;
 }
-/* க்ளியர் சாட் பட்டன் வடிவமைப்பு */
 .stButton>button {
     width: 100%;
     border-radius: 12px;
@@ -52,7 +47,6 @@ st.markdown("""
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
 }
-/* பிரிப்பு கோடு */
 hr {
     border-color: #334155 !important;
     margin: 2rem 0 !important;
@@ -60,11 +54,9 @@ hr {
 </style>
 """, unsafe_allow_html=True)
 
-# அழகான ஹெடர் பகுதி
 st.markdown('<h1 class="main-title">🤖 RuleBot AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="main-caption">Rule-based chatbot + Gemini AI Intelligence</p>', unsafe_allow_html=True)
 
-# ---------------- API KEY ----------------
 def get_api_key():
     try:
         key = st.secrets.get("GEMINI_API_KEY")
@@ -74,7 +66,6 @@ def get_api_key():
         pass
     return os.getenv("GEMINI_API_KEY", "").strip()
 
-# ---------------- RULE-BASED RESPONSES ----------------
 responses = {
     r"\b(hi|hello|hey)\b": [
         "Hello! How can I help you?",
@@ -136,7 +127,6 @@ def get_rule_response(user):
             return random.choice(replies)
     return None
 
-# ---------------- GEMINI AI ----------------
 def get_ai_response():
     api_key = get_api_key()
     if not api_key:
@@ -148,7 +138,6 @@ def get_ai_response():
     try:
         genai.configure(api_key=api_key)
         
-        # சமீபத்திய அரட்டை விவரங்களை எடுத்தல்
         history = st.session_state.messages[-12:]
         conversation_text = "\n".join(
             f"{'User' if msg['role'] == 'user' else 'RuleBot'}: "
@@ -157,7 +146,6 @@ def get_ai_response():
         
         full_prompt = f"Conversation history:\n{conversation_text}\n\nAnswer the latest user message."
         
-        # ✅ இங்கே புதிய மற்றும் செயல்படும் மாடல்கள் மாற்றியமைக்கப்பட்டுள்ளன
         models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash-lite"]
         last_error = None
         
@@ -189,7 +177,6 @@ def get_ai_response():
         st.error(f"Gemini setup error: {error}")
         return "Sorry, the AI service could not be started."
 
-# ---------------- CHAT HISTORY ----------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -197,7 +184,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ---------------- CHAT INPUT ----------------
 if user_prompt := st.chat_input("Ask me anything..."):
     user_prompt = user_prompt.strip()
     if not user_prompt:
@@ -224,7 +210,6 @@ if user_prompt := st.chat_input("Ask me anything..."):
         "content": reply
     })
 
-# ---------------- CLEAR CHAT ----------------
 st.markdown("---")
 col1, col2, col3 = st.columns([1, 1, 1])
 with col3:
