@@ -3,7 +3,7 @@ import re
 import os
 from datetime import datetime
 import streamlit as st
-import google.generativeai as genai  # 🔴 இங்கிருந்து சரியாக மாற்றப்பட்டுள்ளது
+import google.generativeai as genai
 
 # ---------------- PAGE CONFIG & CUSTOM THEME ----------------
 st.set_page_config(
@@ -15,51 +15,48 @@ st.set_page_config(
 # அனிமேஷன் மற்றும் பிரீமியம் தோற்றத்திற்கான பிரத்யேக CSS டிசைன்
 st.markdown("""
 <style>
-    /* ஆப் பின்னணி மற்றும் எழுத்து வடிவமைப்பு */
-    .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: #f8fafc;
-        font-family: 'Segoe UI', Roboto, sans-serif;
-    }
-    
-    /* பிரீமியம் கிரேடியன்ட் தலைப்பு */
-    .main-title {
-        text-align: center;
-        font-size: 3.2rem !important;
-        font-weight: 800;
-        background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0px;
-    }
-    .main-caption {
-        text-align: center;
-        color: #94a3b8;
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-    }
-    
-    /* க்ளியர் சாட் பட்டன் வடிவமைப்பு */
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 600 !important;
-        padding: 0.6rem 1rem !important;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    }
-    
-    /* பிரிப்பு கோடு */
-    hr {
-        border-color: #334155 !important;
-        margin: 2rem 0 !important;
-    }
+/* ஆப் பின்னணி மற்றும் எழுத்து வடிவமைப்பு */
+.stApp {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+/* பிரீமியம் கிரேடியன்ட் தலைப்பு */
+.main-title {
+    text-align: center;
+    font-size: 3.2rem !important;
+    font-weight: 800;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0px;
+}
+.main-caption {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+/* க்ளியர் சாட் பட்டன் வடிவமைப்பு */
+.stButton>button {
+    width: 100%;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+    padding: 0.6rem 1rem !important;
+    transition: all 0.3s ease;
+}
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+/* பிரிப்பு கோடு */
+hr {
+    border-color: #334155 !important;
+    margin: 2rem 0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -149,26 +146,23 @@ def get_ai_response():
         )
     
     try:
-        # 🔴 google-generativeai க்கான சரியான கான்ஃபிகரேஷன் முறை
         genai.configure(api_key=api_key)
         
         # சமீபத்திய அரட்டை விவரங்களை எடுத்தல்
         history = st.session_state.messages[-12:]
         conversation_text = "\n".join(
             f"{'User' if msg['role'] == 'user' else 'RuleBot'}: "
-            f"{msg['content']}"
-            for msg in history
+            f"{msg['content']}" for msg in history
         )
         
         full_prompt = f"Conversation history:\n{conversation_text}\n\nAnswer the latest user message."
         
-        # 🔴 google-generativeai-க்கு உகந்த மாடல்கள் மற்றும் சிஸ்டம் அறிவுறுத்தல் முறை
-        models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro"]
+        # ✅ இங்கே புதிய மற்றும் செயல்படும் மாடல்கள் மாற்றியமைக்கப்பட்டுள்ளன
+        models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3.5-flash-lite"]
         last_error = None
         
         for model_name in models:
             try:
-                # 🔴 பழைய முறையில் மாடல் மற்றும் சிஸ்டம் இன்ஸ்ட்ரக்ஷன் அமைக்கும் முறை
                 model = genai.GenerativeModel(
                     model_name=model_name,
                     system_instruction=(
@@ -184,7 +178,7 @@ def get_ai_response():
                 last_error = f"{model_name} returned an empty response."
             except Exception as error:
                 last_error = f"{model_name}: {error}"
-        
+                
         st.error(f"Gemini API error: {last_error}")
         return (
             "Sorry, Gemini could not answer. Please check the error "
@@ -214,6 +208,7 @@ if user_prompt := st.chat_input("Ask me anything..."):
         "role": "user",
         "content": user_prompt
     })
+    
     with st.chat_message("user"):
         st.markdown(user_prompt)
         
@@ -236,5 +231,4 @@ with col3:
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
         st.rerun()
-
 
