@@ -163,7 +163,7 @@ def get_ai_response():
         full_prompt = f"Conversation history:\n{conversation_text}\n\nAnswer the latest user message."
         
         # 🔴 google-generativeai-க்கு உகந்த மாடல்கள் மற்றும் சிஸ்டம் அறிவுறுத்தல் முறை
-        models = ["gemini-1.5-flash", "gemini-1.5-pro"]
+        models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro"]
         last_error = None
         
         for model_name in models:
