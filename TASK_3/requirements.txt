@@ -1,5 +1,5 @@
+
 streamlit
-transformers
-torch
-pillow
+pandas
+scikit-learn
 
