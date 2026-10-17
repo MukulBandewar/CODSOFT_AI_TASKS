@@ -462,8 +462,7 @@ else:
             )
 
         st.info(
-            "Movie prices are shown only when supplied in the CSV. "
-            "OTT, language and rental details are not inferred."
+          
         )
 
     elif category == "Books":
