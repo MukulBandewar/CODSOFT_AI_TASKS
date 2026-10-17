@@ -254,7 +254,7 @@ with st.expander("🧠 System Core Intelligence"):
     - **Heuristic Constraints**: Depth penalties guarantee the quickest path to victory or draw.
     """)
 
-st.caption("Cyber-Grid Interface v2.5 • Developed with Python & Streamlit 🎮")
+st.caption("Developer - Mukul Bandewar • Developed with Python & Streamlit 🎮")
 
 
 
