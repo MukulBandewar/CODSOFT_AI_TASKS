@@ -35,9 +35,9 @@ div.stButton > button {
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MOVIES_FILE = BASE_DIR / "trending_movies_2026(3).csv"
-BOOKS_FILE = BASE_DIR / "trending_books_2026(3).csv"
-PRODUCTS_FILE = BASE_DIR / "trending_products_2026(3).csv"
+MOVIES_FILE = BASE_DIR / "trending_movies_2026.csv"
+BOOKS_FILE = BASE_DIR / "trending_books_2026.csv"
+PRODUCTS_FILE = BASE_DIR / "trending_products_2026.csv"
 
 
 def load_csv(path, required):
