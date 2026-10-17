@@ -461,7 +461,7 @@ else:
                 category
             )
 
-        st.info(
+        st.info( " m,b,p "
           
         )
 
