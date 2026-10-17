@@ -271,7 +271,7 @@ def show_results(results, category):
                 st.write(f"**Price (USD):** ${price:,.2f}")
                 st.write(f"**Price (INR):** ₹{price * rate:,.2f}")
             else:
-                st.caption("Price not available in the CSV.")
+                st.caption(" the CSV.")
 
             for field in fields[category]:
                 value = item.get(field, "")
@@ -312,7 +312,7 @@ def budget_filter(df, label):
     if available.empty:
         st.info(
             f"No prices available for {label}. "
-            "Add a price_usd column to the CSV to enable budget filtering."
+            "budget filtering."
         )
         return df.copy()
 
