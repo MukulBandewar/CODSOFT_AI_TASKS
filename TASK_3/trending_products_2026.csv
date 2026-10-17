@@ -1,0 +1,101 @@
+item_id,product_name,category,price_usd,rating,click_through_rate,conversion_rate
+PRD_3001,Portable Bluetooth Speaker,Electronics,115.02,4.5,0.12,0.027
+PRD_3002,Ergonomic Office Chair,Furniture,164.59,4.4,0.047,0.039
+PRD_3003,Running Shoes,Apparel/Sports,167.54,4.3,0.031,0.036
+PRD_3004,Electric Coffee Grinder,Home & Kitchen,143.3,4.7,0.055,0.019
+PRD_3005,Leather Wallet,Accessories,251.25,4.6,0.052,0.035
+PRD_3006,Minimalist Backpack,Accessories,233.43,4.1,0.116,0.011
+PRD_3007,Electric Coffee Grinder,Home & Kitchen,126.22,4.1,0.103,0.009
+PRD_3008,LED Desk Lamp with Wireless Charger,Electronics,168.07,4.6,0.055,0.034
+PRD_3009,Ergonomic Office Chair,Furniture,40.07,4.6,0.039,0.033
+PRD_3010,Running Shoes,Apparel/Sports,232.7,4.7,0.104,0.044
+PRD_3011,Running Shoes,Apparel/Sports,334.64,4.5,0.108,0.027
+PRD_3012,4K Ultra HD Projector,Electronics,27.03,4.1,0.079,0.046
+PRD_3013,Mechanical Gaming Keyboard,Electronics,265.17,4.3,0.021,0.034
+PRD_3014,Minimalist Backpack,Accessories,48.67,4.1,0.043,0.006
+PRD_3015,Instant Pot Multi-Cooker,Home & Kitchen,281.71,4.2,0.051,0.012
+PRD_3016,4K Ultra HD Projector Model P15,Electronics,153.04,4.5,0.03,0.013
+PRD_3017,Electric Coffee Grinder Model Q16,Home & Kitchen,306.73,4.5,0.036,0.046
+PRD_3018,Ergonomic Office Chair Model R17,Furniture,92.78,4.5,0.061,0.035
+PRD_3019,LED Desk Lamp with Wireless Charger Model S18,Electronics,284.55,4.7,0.085,0.012
+PRD_3020,Leather Wallet Model T19,Accessories,331.65,4.8,0.043,0.048
+PRD_3021,Portable Bluetooth Speaker Model U20,Electronics,98.78,4.7,0.032,0.022
+PRD_3022,Leather Wallet Model V21,Accessories,50.73,4.3,0.049,0.018
+PRD_3023,Portable Bluetooth Speaker Model W22,Electronics,113.9,4.8,0.082,0.017
+PRD_3024,Electric Coffee Grinder Model X23,Home & Kitchen,304.8,4.6,0.117,0.046
+PRD_3025,Portable Bluetooth Speaker Model Y24,Electronics,181.4,4.7,0.041,0.041
+PRD_3026,Electric Coffee Grinder Model Z25,Home & Kitchen,283.65,4.2,0.031,0.016
+PRD_3027,Air Fryer Max Model A26,Home & Kitchen,256.51,4.5,0.102,0.033
+PRD_3028,LED Desk Lamp with Wireless Charger Model B27,Electronics,225.2,4.0,0.097,0.007
+PRD_3029,Instant Pot Multi-Cooker Model C28,Home & Kitchen,260.34,4.1,0.042,0.039
+PRD_3030,Ergonomic Office Chair Model D29,Furniture,82.27,4.6,0.106,0.021
+PRD_3031,4K Ultra HD Projector Model E30,Electronics,321.02,4.7,0.038,0.042
+PRD_3032,Leather Wallet Model F31,Accessories,339.07,4.2,0.106,0.041
+PRD_3033,Leather Wallet Model G32,Accessories,337.57,4.1,0.116,0.044
+PRD_3034,Portable Bluetooth Speaker Model H33,Electronics,240.93,4.3,0.103,0.03
+PRD_3035,Smart Fitness Smartwatch Model I34,Electronics,279.88,4.0,0.069,0.025
+PRD_3036,Yoga Mat with Strap Model J35,Sports/Fitness,265.92,4.2,0.052,0.034
+PRD_3037,Instant Pot Multi-Cooker Model K36,Home & Kitchen,51.3,4.2,0.013,0.045
+PRD_3038,4K Ultra HD Projector Model L37,Electronics,124.88,4.5,0.081,0.034
+PRD_3039,Leather Wallet Model M38,Accessories,319.64,4.2,0.055,0.011
+PRD_3040,Wireless Noise-Canceling Headphones Model N39,Electronics,116.96,4.4,0.021,0.045
+PRD_3041,Ergonomic Office Chair Model O40,Furniture,145.2,4.3,0.114,0.036
+PRD_3042,4K Ultra HD Projector Model P41,Electronics,155.41,4.6,0.027,0.024
+PRD_3043,Smart Fitness Smartwatch Model Q42,Electronics,294.29,4.5,0.113,0.018
+PRD_3044,Portable Bluetooth Speaker Model R43,Electronics,139.13,4.4,0.115,0.043
+PRD_3045,Smart Fitness Smartwatch Model S44,Electronics,343.61,4.3,0.109,0.034
+PRD_3046,Wireless Noise-Canceling Headphones Model T45,Electronics,148.38,4.2,0.023,0.043
+PRD_3047,Leather Wallet Model U46,Accessories,45.71,4.2,0.08,0.049
+PRD_3048,Wireless Noise-Canceling Headphones Model V47,Electronics,278.58,4.2,0.024,0.03
+PRD_3049,Smart Fitness Smartwatch Model W48,Electronics,292.99,4.4,0.075,0.042
+PRD_3050,Mechanical Gaming Keyboard Model X49,Electronics,125.07,4.1,0.109,0.005
+PRD_3051,Minimalist Backpack Model Y50,Accessories,344.65,4.8,0.069,0.041
+PRD_3052,Smart Fitness Smartwatch Model Z51,Electronics,236.45,4.0,0.012,0.041
+PRD_3053,Mechanical Gaming Keyboard Model A52,Electronics,212.27,4.0,0.039,0.011
+PRD_3054,Running Shoes Model B53,Apparel/Sports,191.24,4.6,0.062,0.04
+PRD_3055,4K Ultra HD Projector Model C54,Electronics,213.88,4.4,0.034,0.033
+PRD_3056,Portable Bluetooth Speaker Model D55,Electronics,277.38,4.7,0.067,0.026
+PRD_3057,Wireless Noise-Canceling Headphones Model E56,Electronics,35.38,4.4,0.054,0.036
+PRD_3058,Leather Wallet Model F57,Accessories,253.65,4.4,0.109,0.019
+PRD_3059,Ergonomic Office Chair Model G58,Furniture,37.0,4.2,0.08,0.03
+PRD_3060,Instant Pot Multi-Cooker Model H59,Home & Kitchen,142.6,4.5,0.042,0.028
+PRD_3061,Running Shoes Model I60,Apparel/Sports,48.22,4.6,0.104,0.034
+PRD_3062,Air Fryer Max Model J61,Home & Kitchen,199.7,4.7,0.057,0.045
+PRD_3063,Running Shoes Model K62,Apparel/Sports,128.54,4.4,0.056,0.009
+PRD_3064,Running Shoes Model L63,Apparel/Sports,119.7,4.2,0.115,0.036
+PRD_3065,Leather Wallet Model M64,Accessories,37.49,4.7,0.02,0.009
+PRD_3066,Portable Bluetooth Speaker Model N65,Electronics,139.84,4.1,0.017,0.048
+PRD_3067,4K Ultra HD Projector Model O66,Electronics,125.43,4.1,0.049,0.035
+PRD_3068,Air Fryer Max Model P67,Home & Kitchen,156.68,4.7,0.016,0.018
+PRD_3069,Hydro Flask Water Bottle Model Q68,Home & Kitchen,132.8,4.5,0.033,0.035
+PRD_3070,Mechanical Gaming Keyboard Model R69,Electronics,298.84,4.3,0.071,0.01
+PRD_3071,Hydro Flask Water Bottle Model S70,Home & Kitchen,207.32,4.6,0.103,0.049
+PRD_3072,Minimalist Backpack Model T71,Accessories,223.28,4.5,0.071,0.032
+PRD_3073,Yoga Mat with Strap Model U72,Sports/Fitness,292.87,4.2,0.03,0.037
+PRD_3074,Hydro Flask Water Bottle Model V73,Home & Kitchen,323.72,4.3,0.03,0.011
+PRD_3075,Yoga Mat with Strap Model W74,Sports/Fitness,149.26,4.1,0.08,0.006
+PRD_3076,Portable Bluetooth Speaker Model X75,Electronics,192.71,4.3,0.06,0.012
+PRD_3077,Hydro Flask Water Bottle Model Y76,Home & Kitchen,256.73,4.6,0.072,0.009
+PRD_3078,Wireless Noise-Canceling Headphones Model Z77,Electronics,67.12,4.6,0.015,0.009
+PRD_3079,Leather Wallet Model A78,Accessories,236.75,4.4,0.059,0.017
+PRD_3080,Air Fryer Max Model B79,Home & Kitchen,186.64,4.3,0.022,0.036
+PRD_3081,Electric Coffee Grinder Model C80,Home & Kitchen,178.02,4.5,0.015,0.023
+PRD_3082,Electric Coffee Grinder Model D81,Home & Kitchen,33.35,4.2,0.114,0.04
+PRD_3083,Air Fryer Max Model E82,Home & Kitchen,100.6,4.3,0.011,0.039
+PRD_3084,Ergonomic Office Chair Model F83,Furniture,58.28,4.4,0.035,0.03
+PRD_3085,Yoga Mat with Strap Model G84,Sports/Fitness,285.08,4.1,0.105,0.007
+PRD_3086,Wireless Noise-Canceling Headphones Model H85,Electronics,169.02,4.1,0.044,0.024
+PRD_3087,Running Shoes Model I86,Apparel/Sports,252.68,4.3,0.023,0.006
+PRD_3088,Instant Pot Multi-Cooker Model J87,Home & Kitchen,72.58,4.8,0.061,0.036
+PRD_3089,Instant Pot Multi-Cooker Model K88,Home & Kitchen,44.52,4.7,0.037,0.031
+PRD_3090,4K Ultra HD Projector Model L89,Electronics,41.35,4.7,0.092,0.015
+PRD_3091,Air Fryer Max Model M90,Home & Kitchen,71.32,4.4,0.023,0.028
+PRD_3092,LED Desk Lamp with Wireless Charger Model N91,Electronics,275.04,4.3,0.115,0.034
+PRD_3093,Ergonomic Office Chair Model O92,Furniture,94.15,4.1,0.032,0.032
+PRD_3094,Air Fryer Max Model P93,Home & Kitchen,269.32,4.1,0.115,0.033
+PRD_3095,Leather Wallet Model Q94,Accessories,267.74,4.6,0.059,0.047
+PRD_3096,Electric Coffee Grinder Model R95,Home & Kitchen,230.4,4.8,0.046,0.049
+PRD_3097,Instant Pot Multi-Cooker Model S96,Home & Kitchen,65.57,4.1,0.059,0.019
+PRD_3098,Hydro Flask Water Bottle Model T97,Home & Kitchen,213.13,4.3,0.018,0.026
+PRD_3099,Wireless Noise-Canceling Headphones Model U98,Electronics,34.06,4.7,0.018,0.044
+PRD_3100,Minimalist Backpack Model V99,Accessories,45.25,4.5,0.052,0.031

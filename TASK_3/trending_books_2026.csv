@@ -1,0 +1,101 @@
+item_id,title,author,category,rating,purchase_count,stock_status
+BOK_2001,Dune,Frank Herbert,Sci-Fi,4.6,21394,In Stock
+BOK_2002,Train to Pakistan,Khushwant Singh,Historical Fiction,4.3,8339,In Stock
+BOK_2003,Project Hail Mary,Andy Weir,Sci-Fi,3.9,9862,In Stock
+BOK_2004,Dune,Frank Herbert,Sci-Fi,4.2,18199,In Stock
+BOK_2005,The Silent Patient,Alex Michaelides,Thriller,4.0,13051,In Stock
+BOK_2006,"Thinking, Fast and Slow",Daniel Kahneman,Psychology,3.9,13856,In Stock
+BOK_2007,The White Tiger,Aravind Adiga,Fiction,4.3,2540,In Stock
+BOK_2008,The Subtle Art of Not Giving a F*ck,Mark Manson,Self-Help,4.2,19639,In Stock
+BOK_2009,The God of Small Things,Arundhati Roy,Fiction,4.2,693,In Stock
+BOK_2010,Educated,Tara Westover,Biography,4.6,14230,In Stock
+BOK_2011,The Shiva Trilogy,Amish Tripathi,Mythology Fiction,4.0,14781,Low Stock
+BOK_2012,The Alchemist,Paulo Coelho,Fiction,4.2,22417,Low Stock
+BOK_2013,Sapiens,Yuval Noah Harari,History,4.7,4682,In Stock
+BOK_2014,Rich Dad Poor Dad,Robert Kiyosaki,Finance,4.5,22225,In Stock
+BOK_2015,To Kill a Mockingbird,Harper Lee,Classic,4.5,4946,Low Stock
+BOK_2016,Sapiens,Yuval Noah Harari,History,3.9,12922,In Stock
+BOK_2017,"Thinking, Fast and Slow",Daniel Kahneman,Psychology,4.3,11559,Low Stock
+BOK_2018,Dune,Frank Herbert,Sci-Fi,4.6,14313,In Stock
+BOK_2019,To Kill a Mockingbird,Harper Lee,Classic,4.3,18175,In Stock
+BOK_2020,Ikigai,Héctor García,Self-Help,4.0,2748,In Stock
+BOK_2021,The Alchemist (Vol. 2),Paulo Coelho,Fiction,4.8,7032,In Stock
+BOK_2022,Palace of Illusions (Vol. 2),Chitra Banerjee Divakaruni,Mythology Fiction,4.0,4636,Low Stock
+BOK_2023,1984 (Vol. 2),George Orwell,Dystopian,4.4,7642,Low Stock
+BOK_2024,Dune (Vol. 2),Frank Herbert,Sci-Fi,4.6,5998,In Stock
+BOK_2025,Sapiens (Vol. 2),Yuval Noah Harari,History,4.9,4042,In Stock
+BOK_2026,Educated (Vol. 2),Tara Westover,Biography,4.4,12798,Low Stock
+BOK_2027,"Thinking, Fast and Slow (Vol. 2)",Daniel Kahneman,Psychology,3.9,23130,In Stock
+BOK_2028,1984 (Vol. 2),George Orwell,Dystopian,4.6,10382,In Stock
+BOK_2029,The God of Small Things (Vol. 2),Arundhati Roy,Fiction,4.7,11877,Low Stock
+BOK_2030,Ikigai (Vol. 2),Héctor García,Self-Help,3.9,21718,In Stock
+BOK_2031,The Alchemist (Vol. 2),Paulo Coelho,Fiction,4.7,16562,In Stock
+BOK_2032,The Subtle Art of Not Giving a F*ck (Vol. 2),Mark Manson,Self-Help,4.9,21326,Low Stock
+BOK_2033,The Silent Patient (Vol. 2),Alex Michaelides,Thriller,4.3,24545,In Stock
+BOK_2034,Palace of Illusions (Vol. 2),Chitra Banerjee Divakaruni,Mythology Fiction,4.7,18134,Low Stock
+BOK_2035,Project Hail Mary (Vol. 2),Andy Weir,Sci-Fi,4.3,24454,In Stock
+BOK_2036,The Midnight Library (Vol. 2),Matt Haig,Fiction,4.7,3339,In Stock
+BOK_2037,Project Hail Mary (Vol. 2),Andy Weir,Sci-Fi,4.1,15727,Low Stock
+BOK_2038,The Midnight Library (Vol. 2),Matt Haig,Fiction,3.8,11150,In Stock
+BOK_2039,The Shiva Trilogy (Vol. 2),Amish Tripathi,Mythology Fiction,4.0,8965,In Stock
+BOK_2040,Dune (Vol. 2),Frank Herbert,Sci-Fi,4.8,23476,In Stock
+BOK_2041,The White Tiger (Vol. 3),Aravind Adiga,Fiction,3.8,6760,In Stock
+BOK_2042,The Psychology of Money (Vol. 3),Morgan Housel,Finance,4.6,16509,In Stock
+BOK_2043,The Shiva Trilogy (Vol. 3),Amish Tripathi,Mythology Fiction,4.5,16583,Low Stock
+BOK_2044,The Alchemist (Vol. 3),Paulo Coelho,Fiction,3.9,7761,Low Stock
+BOK_2045,The Psychology of Money (Vol. 3),Morgan Housel,Finance,4.1,19556,In Stock
+BOK_2046,The Shiva Trilogy (Vol. 3),Amish Tripathi,Mythology Fiction,4.4,11764,Low Stock
+BOK_2047,The White Tiger (Vol. 3),Aravind Adiga,Fiction,4.2,23531,Low Stock
+BOK_2048,Dune (Vol. 3),Frank Herbert,Sci-Fi,4.1,8054,In Stock
+BOK_2049,"Thinking, Fast and Slow (Vol. 3)",Daniel Kahneman,Psychology,4.1,24842,In Stock
+BOK_2050,"Thinking, Fast and Slow (Vol. 3)",Daniel Kahneman,Psychology,4.0,16366,In Stock
+BOK_2051,The God of Small Things (Vol. 3),Arundhati Roy,Fiction,4.9,17691,In Stock
+BOK_2052,1984 (Vol. 3),George Orwell,Dystopian,4.7,10207,In Stock
+BOK_2053,Ikigai (Vol. 3),Héctor García,Self-Help,4.0,963,In Stock
+BOK_2054,Dune (Vol. 3),Frank Herbert,Sci-Fi,3.9,2286,In Stock
+BOK_2055,The Silent Patient (Vol. 3),Alex Michaelides,Thriller,4.5,16585,In Stock
+BOK_2056,The Alchemist (Vol. 3),Paulo Coelho,Fiction,4.4,15881,Low Stock
+BOK_2057,Project Hail Mary (Vol. 3),Andy Weir,Sci-Fi,4.2,2183,In Stock
+BOK_2058,The Shiva Trilogy (Vol. 3),Amish Tripathi,Mythology Fiction,3.9,2641,Low Stock
+BOK_2059,The Shiva Trilogy (Vol. 3),Amish Tripathi,Mythology Fiction,3.9,21125,In Stock
+BOK_2060,The Silent Patient (Vol. 3),Alex Michaelides,Thriller,4.0,18943,In Stock
+BOK_2061,To Kill a Mockingbird (Vol. 4),Harper Lee,Classic,4.9,4381,Low Stock
+BOK_2062,Palace of Illusions (Vol. 4),Chitra Banerjee Divakaruni,Mythology Fiction,4.5,20764,In Stock
+BOK_2063,Train to Pakistan (Vol. 4),Khushwant Singh,Historical Fiction,4.2,15007,In Stock
+BOK_2064,The God of Small Things (Vol. 4),Arundhati Roy,Fiction,4.9,10506,In Stock
+BOK_2065,Palace of Illusions (Vol. 4),Chitra Banerjee Divakaruni,Mythology Fiction,4.9,3751,In Stock
+BOK_2066,"Thinking, Fast and Slow (Vol. 4)",Daniel Kahneman,Psychology,4.1,3160,In Stock
+BOK_2067,The Psychology of Money (Vol. 4),Morgan Housel,Finance,4.0,2959,In Stock
+BOK_2068,The Alchemist (Vol. 4),Paulo Coelho,Fiction,4.2,23089,Low Stock
+BOK_2069,Educated (Vol. 4),Tara Westover,Biography,3.8,9940,In Stock
+BOK_2070,Project Hail Mary (Vol. 4),Andy Weir,Sci-Fi,3.9,8148,In Stock
+BOK_2071,The God of Small Things (Vol. 4),Arundhati Roy,Fiction,4.5,6982,Low Stock
+BOK_2072,1984 (Vol. 4),George Orwell,Dystopian,4.4,21721,In Stock
+BOK_2073,Dune (Vol. 4),Frank Herbert,Sci-Fi,4.7,2839,In Stock
+BOK_2074,Sapiens (Vol. 4),Yuval Noah Harari,History,4.7,19998,In Stock
+BOK_2075,Project Hail Mary (Vol. 4),Andy Weir,Sci-Fi,3.9,23066,In Stock
+BOK_2076,Rich Dad Poor Dad (Vol. 4),Robert Kiyosaki,Finance,4.8,16899,Low Stock
+BOK_2077,Project Hail Mary (Vol. 4),Andy Weir,Sci-Fi,3.9,1806,Low Stock
+BOK_2078,The Midnight Library (Vol. 4),Matt Haig,Fiction,4.5,1347,In Stock
+BOK_2079,The Psychology of Money (Vol. 4),Morgan Housel,Finance,4.9,19348,In Stock
+BOK_2080,Dune (Vol. 4),Frank Herbert,Sci-Fi,4.4,6240,Low Stock
+BOK_2081,Train to Pakistan (Vol. 5),Khushwant Singh,Historical Fiction,4.5,9614,In Stock
+BOK_2082,The God of Small Things (Vol. 5),Arundhati Roy,Fiction,4.3,16612,In Stock
+BOK_2083,The Shiva Trilogy (Vol. 5),Amish Tripathi,Mythology Fiction,4.2,11421,In Stock
+BOK_2084,1984 (Vol. 5),George Orwell,Dystopian,4.7,11307,Low Stock
+BOK_2085,The Shiva Trilogy (Vol. 5),Amish Tripathi,Mythology Fiction,4.1,13622,In Stock
+BOK_2086,Project Hail Mary (Vol. 5),Andy Weir,Sci-Fi,3.9,8770,In Stock
+BOK_2087,1984 (Vol. 5),George Orwell,Dystopian,4.9,13744,In Stock
+BOK_2088,The White Tiger (Vol. 5),Aravind Adiga,Fiction,4.3,2276,In Stock
+BOK_2089,Train to Pakistan (Vol. 5),Khushwant Singh,Historical Fiction,4.2,16834,Low Stock
+BOK_2090,Atomic Habits (Vol. 5),James Clear,Self-Help,4.0,18496,In Stock
+BOK_2091,Educated (Vol. 5),Tara Westover,Biography,4.3,23380,Low Stock
+BOK_2092,1984 (Vol. 5),George Orwell,Dystopian,3.8,21144,In Stock
+BOK_2093,Sapiens (Vol. 5),Yuval Noah Harari,History,4.1,948,Low Stock
+BOK_2094,To Kill a Mockingbird (Vol. 5),Harper Lee,Classic,4.0,4217,Low Stock
+BOK_2095,1984 (Vol. 5),George Orwell,Dystopian,4.5,5545,Low Stock
+BOK_2096,Educated (Vol. 5),Tara Westover,Biography,4.4,9459,Low Stock
+BOK_2097,The Shiva Trilogy (Vol. 5),Amish Tripathi,Mythology Fiction,4.9,8486,Low Stock
+BOK_2098,The White Tiger (Vol. 5),Aravind Adiga,Fiction,4.0,6745,In Stock
+BOK_2099,To Kill a Mockingbird (Vol. 5),Harper Lee,Classic,4.1,14096,In Stock
+BOK_2100,Train to Pakistan (Vol. 5),Khushwant Singh,Historical Fiction,4.1,584,In Stock
