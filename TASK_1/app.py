@@ -1,185 +1,273 @@
 
-import os
 import random
 import re
+import os
 from datetime import datetime
-
 import streamlit as st
 import google.generativeai as genai
 
-# ---------- PAGE CONFIG ----------
 st.set_page_config(
     page_title="RuleBot AI",
     page_icon="🤖",
     layout="centered"
 )
 
-st.title("🤖 RuleBot AI")
-st.caption("Rule-based chatbot + Gemini AI")
-
-# ---------- STYLING ----------
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(135deg, #101827, #202b45);
-    color: white;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+.main-title {
+    text-align: center;
+    font-size: 3.2rem !important;
+    font-weight: 800;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0px;
+}
+.main-caption {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+.stButton>button {
+    width: 100%;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+    padding: 0.6rem 1rem !important;
+    transition: all 0.3s ease;
+}
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+hr {
+    border-color: #334155 !important;
+    margin: 2rem 0 !important;
 }
 .developer-credit {
     position: fixed;
-    bottom: 10px;
+    bottom: 12px;
     right: 18px;
+    color: #94a3b8;
     font-size: 12px;
-    color: #b8c5dc;
-    background: #172238;
-    padding: 7px 12px;
-    border-radius: 10px;
     z-index: 999;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #334155;
 }
 </style>
-<div class="developer-credit">Developer: Mukul Bandewar</div>
 """, unsafe_allow_html=True)
 
-# ---------- API KEY ----------
-api_key = None
+st.markdown(
+    '<h1 class="main-title">🤖 RuleBot AI</h1>',
+    unsafe_allow_html=True
+)
+st.markdown(
+    '<p class="main-caption">Rule-based chatbot + Gemini AI Intelligence</p>',
+    unsafe_allow_html=True
+)
 
-try:
-    api_key = st.secrets.get("GEMINI_API_KEY")
-except Exception:
-    api_key = None
+# Developer name in bottom-right corner
+st.markdown("""
+<div class="developer-credit">
+    Developer: Mukul Bandewar
+</div>
+""", unsafe_allow_html=True)
 
-api_key = api_key or os.getenv("GEMINI_API_KEY")
 
-if api_key:
-    genai.configure(api_key=api_key)
+def get_api_key():
+    try:
+        key = st.secrets.get("GEMINI_API_KEY")
+        if key:
+            return str(key).strip()
+    except Exception:
+        pass
+    return os.getenv("GEMINI_API_KEY", "").strip()
 
-# ---------- RULE-BASED RESPONSES ----------
-def rule_response(message):
-    text = message.lower().strip()
 
-    rules = [
-        (r"\b(hi|hello|hey)\b",
-         ["Hello! 👋 How can I help you?",
-          "Hi there! What can I do for you?"]),
-
-        (r"\bhow are you\b",
-         ["I'm doing great! How are you?",
-          "I'm fine and ready to help!"]),
-
-        (r"\b(your name|who are you)\b",
-         ["I'm RuleBot AI, a chatbot created by Mukul Bandewar. 🤖"]),
-
-        (r"\b(who made you|who created you|your developer)\b",
-         ["I was created by Mukul Bandewar. 🚀"]),
-
-        (r"\bwho is mukul bandewar\b",
-         ["Mukul Bandewar is my developer and creator."]),
-
-        (r"\btime\b",
-         [f"The current time is {datetime.now().strftime('%I:%M %p')}."]),
-
-        (r"\bdate\b|\btoday\b",
-         [f"Today's date is {datetime.now().strftime('%d %B %Y')}."]),
-
-        (r"\b(thank you|thanks)\b",
-         ["You're welcome! 😊", "Happy to help!"]),
-
-        (r"\bbye\b|\bgoodbye\b",
-         ["Goodbye! Have a great day! 👋"]),
-
-        (r"\bhelp\b",
-         ["Sure! Ask me about Python, AI, technology, or general topics."]),
-
-        (r"\bwhat is ai\b|\bartificial intelligence\b",
-         ["AI enables machines to perform tasks that usually require human intelligence."]),
-
-        (r"\bpython\b",
-         ["Python is a beginner-friendly programming language widely used in AI and data science."]),
-
-        (r"\bmachine learning\b",
-         ["Machine learning helps computers learn patterns from data."]),
-
-        (r"\bhow are you\b",
-         ["I'm ready to chat with you!"])
+responses = {
+    r"\b(hi|hello|hey)\b": [
+        "Hello! How can I help you?",
+        "Hi there! Welcome to RuleBot.",
+        "Hey! Nice to meet you."
+    ],
+    r"\bhow are you\b": [
+        "I'm doing great! How are you?",
+        "I'm fine, thanks for asking!"
+    ],
+    r"\b(what is your name|your name|who are you)\b": [
+        "I'm RuleBot AI, developed by Mukul Bandewar!"
+    ],
+    r"\b(who is mukul bandewar|who is mukul)\b": [
+        "Mukul Bandewar is my developer. He built me using Python, Streamlit, and Google Gemini AI."
+    ],
+    r"\b(your age|how old are you)\b": [
+        "I'm an AI chatbot, so I don't have a human age."
+    ],
+    r"\b(who made you|who created you|creator|developer)\b": [
+        "I was created by Mukul Bandewar using Python, Streamlit, and Google Gemini AI."
+    ],
+    r"\b(what is python|define python)\b": [
+        "Python is a popular programming language known for its readable syntax."
+    ],
+    r"\b(what is ai|artificial intelligence)\b": [
+        "Artificial intelligence enables computers to perform tasks that typically require human intelligence."
+    ],
+    r"\b(machine learning|what is ml)\b": [
+        "Machine learning helps computers learn patterns from data."
+    ],
+    r"\b(joke|tell me a joke)\b": [
+        "Why do programmers prefer dark mode? Because light attracts bugs!",
+        "Why was the computer cold? It left its Windows open!"
+    ],
+    r"\b(thanks|thank you)\b": [
+        "You're welcome! Happy to help."
+    ],
+    r"\b(bye|goodbye|exit|quit)\b": [
+        "Goodbye! Have a wonderful day."
     ]
+}
 
-    for pattern, responses in rules:
-        if re.search(pattern, text):
-            return random.choice(responses)
+
+def get_rule_response(user):
+    if re.search(r"\b(time|clock)\b", user):
+        return "Current time: " + datetime.now().strftime("%I:%M %p")
+
+    if re.search(r"\b(date|today)\b", user):
+        return "Today's date: " + datetime.now().strftime("%d-%m-%Y")
+
+    if re.search(r"\b(motivate me|motivation)\b", user):
+        return random.choice([
+            "Believe in yourself. Every expert was once a beginner!",
+            "Keep learning and never give up on your dreams!"
+        ])
+
+    if re.search(r"\b(help|what can you do)\b", user):
+        return (
+            "I can answer basic questions, tell jokes, show the date "
+            "and time, and answer other questions using Gemini AI."
+        )
+
+    for pattern, replies in responses.items():
+        if re.search(pattern, user):
+            return random.choice(replies)
 
     return None
 
-# ---------- GEMINI RESPONSE ----------
-def gemini_response(message):
+
+def get_ai_response():
+    api_key = get_api_key()
+
     if not api_key:
         return (
-            "I can answer basic questions using my built-in rules. "
-            "For AI responses, configure GEMINI_API_KEY in Streamlit Secrets."
+            "⚠️ Gemini API key is missing. Add GEMINI_API_KEY "
+            "to Streamlit Secrets or your environment variables."
         )
 
-    prompt = f"""
-You are RuleBot AI, created by Mukul Bandewar.
-Use simple, friendly and helpful English.
-If asked who created you, say Mukul Bandewar.
-Keep answers clear and concise.
+    try:
+        genai.configure(api_key=api_key)
 
-User: {message}
-"""
+        history = st.session_state.messages[-12:]
+        conversation_text = "\n".join(
+            f"{'User' if msg['role'] == 'user' else 'RuleBot'}: "
+            f"{msg['content']}" for msg in history
+        )
 
-    models = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash"
-    ]
+        full_prompt = (
+            "You are RuleBot AI, developed by Mukul Bandewar. "
+            "If asked who created or developed you, credit Mukul Bandewar. "
+            "Answer the user's latest message accurately in simple language. "
+            "Use examples when useful. If unsure, say so.\n\n"
+            f"Conversation history:\n{conversation_text}\n\n"
+            "Answer the latest user message."
+        )
 
-    for model_name in models:
-        try:
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
+        models = [
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+            "gemini-3.5-flash-lite"
+        ]
+        last_error = None
 
-            answer = getattr(response, "text", None)
-            if answer and answer.strip():
-                return answer.strip()
+        for model_name in models:
+            try:
+                model = genai.GenerativeModel(
+                    model_name=model_name,
+                    system_instruction=(
+                        "You are RuleBot AI, a friendly and helpful assistant. "
+                        "You were developed by Mukul Bandewar using Python, "
+                        "Streamlit, and Google Gemini AI. "
+                        "Answer accurately in simple language. "
+                        "Use examples when useful. If unsure, say so."
+                    )
+                )
 
-        except Exception:
-            continue
+                result = model.generate_content(full_prompt)
+                answer = getattr(result, "text", None)
 
-    return (
-        "Sorry, I couldn't generate an AI response. "
-        "Please check your Gemini API key and model availability."
-    )
+                if answer and answer.strip():
+                    return answer.strip()
 
-# ---------- CHAT HISTORY ----------
+                last_error = f"{model_name} returned an empty response."
+
+            except Exception as error:
+                last_error = f"{model_name}: {error}"
+
+        st.error(f"Gemini API error: {last_error}")
+        return (
+            "Sorry, Gemini could not answer. Please check the error "
+            "shown above, your API key, model access, and API quota."
+        )
+
+    except Exception as error:
+        st.error(f"Gemini setup error: {error}")
+        return "Sorry, the AI service could not be started."
+
+
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {
-            "role": "assistant",
-            "content": "Hello! 👋 I'm RuleBot AI. Ask me anything!"
-        }
-    ]
+    st.session_state.messages = []
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ---------- USER INPUT ----------
-user_input = st.chat_input("Type your message here...")
 
-if user_input:
+if user_prompt := st.chat_input("Ask me anything..."):
+    user_prompt = user_prompt.strip()
+
+    if not user_prompt:
+        st.warning("Please enter a message.")
+        st.stop()
+
     st.session_state.messages.append({
         "role": "user",
-        "content": user_input
+        "content": user_prompt
     })
 
     with st.chat_message("user"):
-        st.markdown(user_input)
+        st.markdown(user_prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            reply = rule_response(user_input)
+        with st.spinner("✨ RuleBot is thinking..."):
+            reply = get_rule_response(user_prompt.lower())
 
             if reply is None:
-                reply = gemini_response(user_input)
+                reply = get_ai_response()
 
-            reply = str(reply) if reply else "Sorry, I couldn't generate a response."
+            # Ensure reply is always a string
+            reply = str(reply) if reply is not None else (
+                "Sorry, I couldn't generate a response."
+            )
+
             st.markdown(reply)
 
     st.session_state.messages.append({
@@ -187,12 +275,12 @@ if user_input:
         "content": reply
     })
 
-# ---------- CLEAR CHAT ----------
-if st.button("🗑️ Clear Chat"):
-    st.session_state.messages = [
-        {
-            "role": "assistant",
-            "content": "Chat cleared! Hello again 👋"
-        }
-    ]
-    st.rerun()
+st.markdown("---")
+
+col1, col2, col3 = st.columns([1, 1, 1])
+
+with col3:
+    if st.button("🗑️ Clear Chat"):
+        st.session_state.messages = []
+        st.rerun()
+
