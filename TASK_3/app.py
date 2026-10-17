@@ -5,14 +5,12 @@ from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="RecoVerse AI",
     page_icon="🎯",
     layout="wide"
 )
 
-# ---------------- UI THEME ----------------
 st.markdown("""
 <style>
 .stApp {
@@ -35,7 +33,6 @@ div.stButton > button {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- CSV FILES ----------------
 BASE_DIR = Path(__file__).resolve().parent
 
 MOVIES_FILE = BASE_DIR / "trending_movies_2026(3).csv"
@@ -72,7 +69,6 @@ def load_csv(path, required):
 
 
 def add_price_column(df):
-    """Support optional price columns in different CSV formats."""
     if "price_usd" in df.columns:
         df["Price (USD)"] = pd.to_numeric(
             df["price_usd"], errors="coerce"
@@ -87,7 +83,6 @@ def add_price_column(df):
     return df
 
 
-# ---------------- LOAD DATA ----------------
 movie_df = load_csv(MOVIES_FILE, [
     "item_id", "title", "genre", "release_year",
     "average_rating", "trending_score", "global_views_millions"
@@ -103,7 +98,6 @@ product_df = load_csv(PRODUCTS_FILE, [
     "rating", "click_through_rate", "conversion_rate"
 ])
 
-# ---------------- PREPARE MOVIES ----------------
 movie_df = movie_df.rename(columns={
     "title": "Name",
     "genre": "Genre",
@@ -113,6 +107,15 @@ movie_df = movie_df.rename(columns={
     "global_views_millions": "Global Views (Millions)"
 })
 
+movie_df["IMDb Rating"] = pd.to_numeric(
+    movie_df["IMDb Rating"], errors="coerce"
+)
+movie_df["Trending Score"] = pd.to_numeric(
+    movie_df["Trending Score"], errors="coerce"
+)
+movie_df["Global Views (Millions)"] = pd.to_numeric(
+    movie_df["Global Views (Millions)"], errors="coerce"
+)
 movie_df["Industry"] = "Not specified in CSV"
 movie_df["Language"] = "Not specified in CSV"
 movie_df["OTT Information"] = "Not provided in CSV"
@@ -120,7 +123,6 @@ movie_df["Dubbed Languages"] = "Not provided in CSV"
 movie_df["Description"] = movie_df["Genre"].fillna("").astype(str)
 movie_df = add_price_column(movie_df)
 
-# ---------------- PREPARE BOOKS ----------------
 book_df = book_df.rename(columns={
     "title": "Name",
     "author": "Author",
@@ -130,13 +132,16 @@ book_df = book_df.rename(columns={
     "stock_status": "Stock Status"
 })
 
+book_df["Rating"] = pd.to_numeric(book_df["Rating"], errors="coerce")
+book_df["Purchase Count"] = pd.to_numeric(
+    book_df["Purchase Count"], errors="coerce"
+)
 book_df["Description"] = (
     book_df["Genre"].fillna("").astype(str) + " " +
     book_df["Author"].fillna("").astype(str)
 )
 book_df = add_price_column(book_df)
 
-# ---------------- PREPARE PRODUCTS ----------------
 product_df = product_df.rename(columns={
     "product_name": "Name",
     "category": "Category",
@@ -146,14 +151,15 @@ product_df = product_df.rename(columns={
     "conversion_rate": "Conversion Rate"
 })
 
-product_df["Price (USD)"] = pd.to_numeric(
-    product_df["Price (USD)"], errors="coerce"
-)
+for column in ["Price (USD)", "Rating", "Click Through Rate", "Conversion Rate"]:
+    product_df[column] = pd.to_numeric(
+        product_df[column], errors="coerce"
+    )
+
 product_df["Description"] = (
     product_df["Category"].fillna("").astype(str)
 )
 
-# ---------------- CURRENCY SETTINGS ----------------
 if "usd_inr_rate" not in st.session_state:
     st.session_state.usd_inr_rate = 95.02
 
@@ -173,7 +179,7 @@ with st.sidebar:
         "This is a manual rate, not a live feed."
     )
 
-# ---------------- RECOMMENDATION ENGINE ----------------
+
 def recommend(df, columns, query, favorite, count):
     if df.empty:
         return pd.DataFrame()
@@ -190,7 +196,11 @@ def recommend(df, columns, query, favorite, count):
         ngram_range=(1, 2)
     )
 
-    matrix = vectorizer.fit_transform(text_data)
+    try:
+        matrix = vectorizer.fit_transform(text_data)
+    except ValueError:
+        return pd.DataFrame()
+
     query = str(query).strip()
 
     if favorite != "None":
@@ -203,9 +213,12 @@ def recommend(df, columns, query, favorite, count):
     if not query.strip():
         return pd.DataFrame()
 
-    scores = cosine_similarity(
-        vectorizer.transform([query]), matrix
-    ).ravel()
+    try:
+        scores = cosine_similarity(
+            vectorizer.transform([query]), matrix
+        ).ravel()
+    except ValueError:
+        return pd.DataFrame()
 
     results = df.copy()
     results["Similarity"] = scores
@@ -220,7 +233,6 @@ def recommend(df, columns, query, favorite, count):
     ).head(count)
 
 
-# ---------------- DISPLAY RESULTS ----------------
 def show_results(results, category):
     if results.empty:
         st.warning(
@@ -252,7 +264,6 @@ def show_results(results, category):
         with st.container(border=True):
             st.markdown(f"### {item['Name']}")
 
-            # Show both currencies when a price exists.
             price = item.get("Price (USD)", float("nan"))
 
             if pd.notna(price):
@@ -272,7 +283,11 @@ def show_results(results, category):
                     value = f"{float(value):,.1f} million"
 
                 elif field in ["IMDb Rating", "Rating"]:
-                    value = f"{value}/10" if category == "Movies" else f"{value}/5"
+                    value = (
+                        f"{value}/10"
+                        if category == "Movies"
+                        else f"{value}/5"
+                    )
 
                 elif field in ["Click Through Rate", "Conversion Rate"]:
                     number = float(value)
@@ -285,14 +300,12 @@ def show_results(results, category):
                 st.write(f"**{field}:** {value}")
 
             st.progress(
-                min(float(item["Similarity"]), 1.0),
+                min(max(float(item["Similarity"]), 0.0), 1.0),
                 text="Content similarity (not accuracy)"
             )
 
 
-# ---------------- COMMON FILTERS ----------------
 def budget_filter(df, label):
-    """Filter prices in USD or INR when prices exist."""
     prices = pd.to_numeric(df["Price (USD)"], errors="coerce")
     available = prices.dropna()
 
@@ -344,7 +357,6 @@ def budget_filter(df, label):
     ].copy()
 
 
-# ---------------- HOME PAGE ----------------
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
@@ -389,7 +401,6 @@ else:
         "Products": "🛍️ Product Recommendations"
     }[category])
 
-    # ---------------- MOVIES ----------------
     if category == "Movies":
         df = movie_df.copy()
 
@@ -397,21 +408,26 @@ else:
             word.strip()
             for value in df["Genre"].dropna()
             for word in str(value).replace("/", " ").split()
+            if word.strip()
         ))
 
         selected = st.multiselect("Movie interests", genres)
 
-        rating_min = float(df["IMDb Rating"].min())
-        rating_max = float(df["IMDb Rating"].max())
+        ratings = df["IMDb Rating"].dropna()
 
-        if rating_min < rating_max:
-            rating = st.slider(
-                "Minimum rating",
-                rating_min, rating_max, rating_min
-            )
-            df = df[df["IMDb Rating"] >= rating]
-        else:
-            rating = rating_min
+        if not ratings.empty:
+            rating_min = float(ratings.min())
+            rating_max = float(ratings.max())
+
+            if rating_min < rating_max:
+                rating = st.slider(
+                    "Minimum rating",
+                    rating_min, rating_max, rating_min
+                )
+                df = df[
+                    df["IMDb Rating"].isna()
+                    | (df["IMDb Rating"] >= rating)
+                ]
 
         favorite = st.selectbox(
             "Favorite movie",
@@ -450,7 +466,6 @@ else:
             "OTT, language and rental details are not inferred."
         )
 
-    # ---------------- BOOKS ----------------
     elif category == "Books":
         df = book_df.copy()
 
@@ -463,6 +478,7 @@ else:
             word.strip()
             for value in df["Genre"].dropna()
             for word in str(value).replace("/", " ").split()
+            if word.strip()
         ))
 
         selected = st.multiselect("Book interests", genres)
@@ -502,7 +518,6 @@ else:
                 category
             )
 
-    # ---------------- PRODUCTS ----------------
     else:
         df = product_df.copy()
 
@@ -510,6 +525,7 @@ else:
             word.strip()
             for value in df["Category"].dropna()
             for word in str(value).replace("/", " ").split()
+            if word.strip()
         ))
 
         selected = st.multiselect("Product interests", categories)
@@ -551,4 +567,3 @@ st.caption(
     "Developer - Mukul Bandewar | RecoVerse AI | "
     "Python • Streamlit • Pandas"
 )
-
