@@ -311,7 +311,7 @@ def budget_filter(df, label):
 
     if available.empty:
         st.info(
-            f"No prices available for {label}. "
+            f" is {label}. "
             "budget filtering."
         )
         return df.copy()
@@ -461,7 +461,7 @@ else:
                 category
             )
 
-        st.info( " m,b,p "
+        st.info( " Recommendation  "
           
         )
 
