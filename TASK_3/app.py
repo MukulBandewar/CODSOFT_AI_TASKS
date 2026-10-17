@@ -311,7 +311,6 @@ def budget_filter(df, label):
 
     if available.empty:
         st.info(
-            f
             "budget filtering."
         )
         return df.copy()
