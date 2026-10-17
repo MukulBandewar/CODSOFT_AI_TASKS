@@ -187,7 +187,7 @@ else:
         if st.button("✨ Find Movies"):
             show_results(recommend(filtered, columns, query, favorite, count), category)
 
-        st.info("OTT and dubbed-audio information may vary by region and can change. Ratings are sample values, not live data.")
+        st.info("OTT and dubbed-audio information may vary by region and can change")
 
     elif category == "Books":
         df = book_df
@@ -226,4 +226,4 @@ else:
                                    " ".join(selected), favorite, count), category)
 
 st.divider()
-st.caption("RecoVerse AI | Python • Streamlit • Pandas • TF-IDF • Cosine Similarity")
+st.caption("Developer - Mukul Bandewar | RecoVerse AI | Python • Streamlit • Pandas ")
