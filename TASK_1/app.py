@@ -3,6 +3,7 @@ import random
 import re
 import os
 from datetime import datetime
+
 import streamlit as st
 import google.generativeai as genai
 
@@ -19,6 +20,7 @@ st.markdown("""
     color: #f8fafc;
     font-family: 'Segoe UI', Roboto, sans-serif;
 }
+
 .main-title {
     text-align: center;
     font-size: 3.2rem !important;
@@ -26,43 +28,112 @@ st.markdown("""
     background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
+
 .main-caption {
     text-align: center;
     color: #94a3b8;
     font-size: 1.1rem;
     margin-bottom: 2rem;
 }
-.stButton>button {
+
+.stButton > button {
     width: 100%;
     border-radius: 12px;
-    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+    background: linear-gradient(90deg, #ef4444, #dc2626) !important;
     color: white !important;
     border: none !important;
     font-weight: 600 !important;
     padding: 0.6rem 1rem !important;
     transition: all 0.3s ease;
 }
-.stButton>button:hover {
+
+.stButton > button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
 }
+
 hr {
     border-color: #334155 !important;
     margin: 2rem 0 !important;
 }
+
 .developer-credit {
     position: fixed;
-    bottom: 12px;
-    right: 18px;
-    color: #94a3b8;
+    bottom: 10px;
+    right: 12px;
+    color: #cbd5e1;
     font-size: 12px;
     z-index: 999;
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(15, 23, 42, 0.95);
     padding: 6px 10px;
     border-radius: 8px;
     border: 1px solid #334155;
+    pointer-events: none;
+}
+
+/* Tablet and mobile responsive design */
+@media screen and (max-width: 768px) {
+    .main-title {
+        font-size: 2.2rem !important;
+        line-height: 1.2;
+    }
+
+    .main-caption {
+        font-size: 0.95rem;
+        margin-bottom: 1.2rem;
+        padding: 0 8px;
+    }
+
+    .block-container {
+        padding: 1rem 1rem 5rem 1rem !important;
+    }
+
+    .stButton > button {
+        min-height: 44px;
+        font-size: 0.95rem !important;
+        transform: none;
+    }
+
+    .developer-credit {
+        bottom: 6px;
+        right: 6px;
+        font-size: 10px;
+        padding: 4px 7px;
+    }
+
+    [data-testid="stChatInput"] {
+        padding-bottom: 0.5rem;
+    }
+
+    [data-testid="stChatMessage"] {
+        padding: 0.75rem 0.5rem;
+    }
+
+    hr {
+        margin: 1.2rem 0 !important;
+    }
+}
+
+/* Small mobile screens */
+@media screen and (max-width: 380px) {
+    .main-title {
+        font-size: 1.8rem !important;
+    }
+
+    .main-caption {
+        font-size: 0.85rem;
+    }
+
+    .block-container {
+        padding-left: 0.7rem !important;
+        padding-right: 0.7rem !important;
+    }
+
+    .developer-credit {
+        font-size: 9px;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -76,7 +147,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Developer name in bottom-right corner
 st.markdown("""
 <div class="developer-credit">
     Developer: Mukul Bandewar
@@ -91,6 +161,7 @@ def get_api_key():
             return str(key).strip()
     except Exception:
         pass
+
     return os.getenv("GEMINI_API_KEY", "").strip()
 
 
@@ -179,7 +250,8 @@ def get_ai_response():
         history = st.session_state.messages[-12:]
         conversation_text = "\n".join(
             f"{'User' if msg['role'] == 'user' else 'RuleBot'}: "
-            f"{msg['content']}" for msg in history
+            f"{msg['content']}"
+            for msg in history
         )
 
         full_prompt = (
@@ -196,6 +268,7 @@ def get_ai_response():
             "gemini-2.5-pro",
             "gemini-3.5-flash-lite"
         ]
+
         last_error = None
 
         for model_name in models:
@@ -223,6 +296,7 @@ def get_ai_response():
                 last_error = f"{model_name}: {error}"
 
         st.error(f"Gemini API error: {last_error}")
+
         return (
             "Sorry, Gemini could not answer. Please check the error "
             "shown above, your API key, model access, and API quota."
@@ -263,7 +337,6 @@ if user_prompt := st.chat_input("Ask me anything..."):
             if reply is None:
                 reply = get_ai_response()
 
-            # Ensure reply is always a string
             reply = str(reply) if reply is not None else (
                 "Sorry, I couldn't generate a response."
             )
@@ -275,6 +348,7 @@ if user_prompt := st.chat_input("Ask me anything..."):
         "content": reply
     })
 
+
 st.markdown("---")
 
 col1, col2, col3 = st.columns([1, 1, 1])
@@ -283,4 +357,5 @@ with col3:
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
         st.rerun()
+
 
