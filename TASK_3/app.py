@@ -400,7 +400,7 @@ if st.session_state.page == "Home":
         with st.container(border=True):
             st.markdown("## 🎬 Movies")
             st.write("Discover movies based on genre and ratings.")
-            st.metric("Movies Available", len(movie_df))
+            
             if st.button("Explore Movies", key="home_movies"):
                 st.session_state.page = "Movies"
                 st.rerun()
@@ -409,7 +409,7 @@ if st.session_state.page == "Home":
         with st.container(border=True):
             st.markdown("## 📚 Books")
             st.write("Find books based on authors and categories.")
-            st.metric("Books Available", len(book_df))
+         
             if st.button("Explore Books", key="home_books"):
                 st.session_state.page = "Books"
                 st.rerun()
@@ -418,7 +418,7 @@ if st.session_state.page == "Home":
         with st.container(border=True):
             st.markdown("## 🛍️ Products")
             st.write("Explore products based on categories and ratings.")
-            st.metric("Products Available", len(product_df))
+            
             if st.button("Explore Products", key="home_products"):
                 st.session_state.page = "Products"
                 st.rerun()
