@@ -16,87 +16,193 @@ st.markdown("""
 .stApp {
     background: linear-gradient(135deg,#0b1220,#172943);
     color: white;
+    font-family: 'Segoe UI', sans-serif;
 }
-h1,h2,h3,p,label { color: white; }
+h1,h2,h3,h4,p,label {
+    color: white !important;
+}
+.block-container {
+    max-width: 1250px;
+    padding: 2rem 2rem 3rem;
+}
 .hero {
-    padding: 25px;
+    padding: 30px 18px;
     border-radius: 18px;
     background: linear-gradient(120deg,#273c75,#192a56);
     text-align: center;
+    border: 1px solid #40558c;
 }
-div.stButton > button {
+.hero h1 {
+    font-size: clamp(2rem,5vw,3.2rem);
+}
+.hero p {
+    color: #dbeafe !important;
+}
+.stButton > button {
     width: 100%;
-    min-height: 42px;
-    border-radius: 10px;
-    font-weight: bold;
+    min-height: 44px;
+    border-radius: 11px;
+    background: linear-gradient(90deg,#4f46e5,#9333ea);
+    color: white !important;
+    border: 1px solid #6366f1;
+    font-weight: 650;
+}
+.stButton > button:hover {
+    border-color: #c4b5fd;
+    box-shadow: 0 4px 14px #6366f155;
+}
+div[data-testid="stMetric"] {
+    background: #17243a;
+    border: 1px solid #40558c;
+    border-radius: 13px;
+    padding: 12px;
+}
+div[data-testid="stMetricLabel"],
+div[data-testid="stMetricValue"] {
+    color: white !important;
+}
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-color: #334b70;
+    border-radius: 14px;
+}
+[data-testid="stSidebar"] {
+    background: #0c1729;
+}
+[data-testid="stExpander"] {
+    border-color: #334b70;
+    border-radius: 12px;
+}
+hr {
+    border-color: #334155;
+}
+@media(max-width:768px) {
+    .block-container {
+        padding: 1rem .8rem 2rem !important;
+    }
+    .hero {
+        padding: 22px 12px;
+        border-radius: 14px;
+    }
+    .hero h1 {
+        font-size: 2rem;
+    }
+    .hero h3 {
+        font-size: 1rem;
+    }
+    .hero p {
+        font-size: .9rem;
+    }
+    h1 {
+        font-size: 1.7rem !important;
+    }
+    h2 {
+        font-size: 1.4rem !important;
+    }
+    h3 {
+        font-size: 1.15rem !important;
+    }
+    div[data-testid="stMetric"] {
+        padding: 8px 5px;
+    }
+    div[data-testid="stMetricLabel"] {
+        font-size: .75rem !important;
+    }
+    div[data-testid="stMetricValue"] {
+        font-size: 1.25rem !important;
+    }
+    .stButton > button {
+        font-size: .9rem;
+        min-height: 44px;
+    }
+}
+@media(max-width:380px) {
+    .block-container {
+        padding-left: .55rem !important;
+        padding-right: .55rem !important;
+    }
+    .hero h1 {
+        font-size: 1.7rem;
+    }
+    div[data-testid="stMetricValue"] {
+        font-size: 1.05rem !important;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MOVIES_FILE = BASE_DIR / "trending_movies_2026.csv"
-BOOKS_FILE = BASE_DIR / "trending_books_2026.csv"
-PRODUCTS_FILE = BASE_DIR / "trending_products_2026.csv"
 
+def load_csv(filename, required_columns):
+    path = BASE_DIR / filename
 
-def load_csv(path, required):
     if not path.exists():
-        st.error(f"CSV file not found: {path.name}")
+        st.error(f"Dataset file not found: {filename}")
+        st.info("Keep the CSV file in the same folder as app.py.")
         st.stop()
 
     try:
-        data = pd.read_csv(path)
+        df = pd.read_csv(path)
     except Exception as error:
-        st.error(f"Could not read {path.name}: {error}")
+        st.error(f"Could not read {filename}: {error}")
         st.stop()
 
-    data.columns = data.columns.str.strip()
+    df.columns = df.columns.str.strip().str.lower()
 
-    missing = set(required) - set(data.columns)
+    missing = [col for col in required_columns if col not in df.columns]
+
     if missing:
         st.error(
-            f"Missing columns in {path.name}: "
-            + ", ".join(sorted(missing))
+            f"{filename} is missing these columns: "
+            + ", ".join(missing)
         )
         st.stop()
 
-    if data.empty:
-        st.error(f"{path.name} has no records.")
+    if df.empty:
+        st.error(f"{filename} has no data.")
         st.stop()
 
-    return data
+    return df.fillna("")
 
 
-def add_price_column(df):
-    if "price_usd" in df.columns:
-        df["Price (USD)"] = pd.to_numeric(
-            df["price_usd"], errors="coerce"
-        )
-    elif "Price (USD)" in df.columns:
-        df["Price (USD)"] = pd.to_numeric(
-            df["Price (USD)"], errors="coerce"
-        )
-    else:
-        df["Price (USD)"] = float("nan")
+movie_df = load_csv(
+    "trending_movies_2026.csv",
+    [
+        "item_id",
+        "title",
+        "genre",
+        "release_year",
+        "average_rating",
+        "trending_score",
+        "global_views_millions"
+    ]
+)
 
-    return df
+book_df = load_csv(
+    "trending_books_2026.csv",
+    [
+        "item_id",
+        "title",
+        "author",
+        "category",
+        "rating",
+        "purchase_count",
+        "stock_status"
+    ]
+)
 
+product_df = load_csv(
+    "trending_products_2026.csv",
+    [
+        "item_id",
+        "product_name",
+        "category",
+        "rating",
+        "click_through_rate",
+        "conversion_rate"
+    ]
+)
 
-movie_df = load_csv(MOVIES_FILE, [
-    "item_id", "title", "genre", "release_year",
-    "average_rating", "trending_score", "global_views_millions"
-])
-
-book_df = load_csv(BOOKS_FILE, [
-    "item_id", "title", "author", "category",
-    "rating", "purchase_count", "stock_status"
-])
-
-product_df = load_csv(PRODUCTS_FILE, [
-    "item_id", "product_name", "category", "price_usd",
-    "rating", "click_through_rate", "conversion_rate"
-])
 
 movie_df = movie_df.rename(columns={
     "title": "Name",
@@ -107,22 +213,6 @@ movie_df = movie_df.rename(columns={
     "global_views_millions": "Global Views (Millions)"
 })
 
-movie_df["IMDb Rating"] = pd.to_numeric(
-    movie_df["IMDb Rating"], errors="coerce"
-)
-movie_df["Trending Score"] = pd.to_numeric(
-    movie_df["Trending Score"], errors="coerce"
-)
-movie_df["Global Views (Millions)"] = pd.to_numeric(
-    movie_df["Global Views (Millions)"], errors="coerce"
-)
-movie_df["Industry"] = "Not specified in CSV"
-movie_df["Language"] = "Not specified in CSV"
-movie_df["OTT Information"] = "Not provided in CSV"
-movie_df["Dubbed Languages"] = "Not provided in CSV"
-movie_df["Description"] = movie_df["Genre"].fillna("").astype(str)
-movie_df = add_price_column(movie_df)
-
 book_df = book_df.rename(columns={
     "title": "Name",
     "author": "Author",
@@ -132,436 +222,378 @@ book_df = book_df.rename(columns={
     "stock_status": "Stock Status"
 })
 
-book_df["Rating"] = pd.to_numeric(book_df["Rating"], errors="coerce")
-book_df["Purchase Count"] = pd.to_numeric(
-    book_df["Purchase Count"], errors="coerce"
-)
-book_df["Description"] = (
-    book_df["Genre"].fillna("").astype(str) + " " +
-    book_df["Author"].fillna("").astype(str)
-)
-book_df = add_price_column(book_df)
-
 product_df = product_df.rename(columns={
     "product_name": "Name",
     "category": "Category",
-    "price_usd": "Price (USD)",
     "rating": "Rating",
     "click_through_rate": "Click Through Rate",
     "conversion_rate": "Conversion Rate"
 })
 
-for column in ["Price (USD)", "Rating", "Click Through Rate", "Conversion Rate"]:
-    product_df[column] = pd.to_numeric(
-        product_df[column], errors="coerce"
-    )
 
-product_df["Description"] = (
-    product_df["Category"].fillna("").astype(str)
+def to_number(df, columns):
+    for column in columns:
+        df[column] = pd.to_numeric(
+            df[column], errors="coerce"
+        ).fillna(0)
+    return df
+
+
+movie_df = to_number(movie_df, [
+    "Release Year",
+    "IMDb Rating",
+    "Trending Score",
+    "Global Views (Millions)"
+])
+movie_df["Description"] = movie_df["Genre"].astype(str)
+
+book_df = to_number(book_df, [
+    "Rating",
+    "Purchase Count"
+])
+book_df["Description"] = (
+    book_df["Genre"].astype(str) + " " +
+    book_df["Author"].astype(str)
 )
 
-if "usd_inr_rate" not in st.session_state:
-    st.session_state.usd_inr_rate = 95.02
-
-with st.sidebar:
-    st.header("💱 Currency Settings")
-
-    st.number_input(
-        "1 USD = INR",
-        min_value=1.0,
-        max_value=200.0,
-        step=0.10,
-        key="usd_inr_rate"
-    )
-
-    st.caption(
-        "Enter your preferred exchange rate. "
-        "This is a manual rate, not a live feed."
-    )
+product_df = to_number(product_df, [
+    "Rating",
+    "Click Through Rate",
+    "Conversion Rate"
+])
+product_df["Description"] = product_df["Category"].astype(str)
 
 
-def recommend(df, columns, query, favorite, count):
-    if df.empty:
-        return pd.DataFrame()
+def recommend(df, columns, query="", favorite="", count=5):
+    data = df.copy()
 
-    text_data = df[columns].fillna("").astype(str).agg(
+    if data.empty:
+        return data, []
+
+    text_data = data[columns].fillna("").astype(str).agg(
         " ".join, axis=1
     )
 
-    if not text_data.str.strip().any():
-        return pd.DataFrame()
+    if not query.strip() and not favorite:
+        query = "popular trending recommended"
 
-    vectorizer = TfidfVectorizer(
-        stop_words="english",
-        ngram_range=(1, 2)
-    )
+    if favorite:
+        selected = data[data["Name"] == favorite]
+        if not selected.empty:
+            query = (
+                query + " " +
+                selected.iloc[0][columns].fillna("").astype(str).str.cat(sep=" ")
+            )
 
     try:
+        vectorizer = TfidfVectorizer(
+            stop_words="english",
+            ngram_range=(1, 2)
+        )
         matrix = vectorizer.fit_transform(text_data)
+        query_vector = vectorizer.transform([query])
+        scores = cosine_similarity(query_vector, matrix).flatten()
     except ValueError:
-        return pd.DataFrame()
+        return data.iloc[0:0].copy(), []
 
-    query = str(query).strip()
+    data["Similarity"] = scores
 
-    if favorite != "None":
-        selected_item = df[df["Name"] == favorite]
-        if not selected_item.empty:
-            query += " " + selected_item.iloc[0][columns].fillna(
-                ""
-            ).astype(str).str.cat(sep=" ")
+    if favorite:
+        data = data[data["Name"] != favorite]
 
-    if not query.strip():
-        return pd.DataFrame()
+    data = data[data["Similarity"] > 0]
+    data = data.sort_values("Similarity", ascending=False)
+    results = data.head(count).copy()
 
-    try:
-        scores = cosine_similarity(
-            vectorizer.transform([query]), matrix
-        ).ravel()
-    except ValueError:
-        return pd.DataFrame()
-
-    results = df.copy()
-    results["Similarity"] = scores
-
-    if favorite != "None":
-        results = results[results["Name"] != favorite]
-
-    results = results[results["Similarity"] > 0]
-
-    return results.sort_values(
-        "Similarity", ascending=False
-    ).head(count)
+    return results, results["Similarity"].tolist()
 
 
 def show_results(results, category):
     if results.empty:
         st.warning(
             "No matching recommendations found. "
-            "Try changing your interests or filters."
+            "Try changing your filters."
         )
         return
 
-    st.subheader("✨ Your Recommendations")
+    st.subheader("✨ Recommended for You")
+    st.caption(
+        "Similarity scores show how closely items match your selections. "
+        "They are not model accuracy."
+    )
 
-    fields = {
-        "Movies": [
-            "Genre", "Release Year", "IMDb Rating",
-            "Trending Score", "Global Views (Millions)"
-        ],
-        "Books": [
-            "Author", "Genre", "Rating",
-            "Purchase Count", "Stock Status"
-        ],
-        "Products": [
-            "Category", "Rating",
-            "Click Through Rate", "Conversion Rate"
-        ]
-    }
-
-    rate = st.session_state.usd_inr_rate
+    st.metric("Recommendations Found", len(results))
 
     for _, item in results.iterrows():
         with st.container(border=True):
             st.markdown(f"### {item['Name']}")
 
-            price = item.get("Price (USD)", float("nan"))
+            if category == "Movies":
+                c1, c2, c3 = st.columns(3)
 
-            if pd.notna(price):
-                price = float(price)
-                st.write(f"**Price (USD):** ${price:,.2f}")
-                st.write(f"**Price (INR):** ₹{price * rate:,.2f}")
-            else:
-                st.caption(" the CSV.")
+                c1.write(f"**Genre:** {item['Genre']}")
+                c2.write(f"**Year:** {int(item['Release Year'])}")
+                c3.write(f"**IMDb Rating:** {item['IMDb Rating']:.1f}/10")
 
-            for field in fields[category]:
-                value = item.get(field, "")
+                c1.write(
+                    f"**Trending Score:** {item['Trending Score']}"
+                )
+                c2.write(
+                    f"**Global Views:** "
+                    f"{item['Global Views (Millions)']} million"
+                )
 
-                if pd.isna(value):
-                    continue
+            elif category == "Books":
+                c1, c2, c3 = st.columns(3)
 
-                if field == "Global Views (Millions)":
-                    value = f"{float(value):,.1f} million"
+                c1.write(f"**Author:** {item['Author']}")
+                c2.write(f"**Genre:** {item['Genre']}")
+                c3.write(f"**Rating:** {item['Rating']}/5")
 
-                elif field in ["IMDb Rating", "Rating"]:
-                    value = (
-                        f"{value}/10"
-                        if category == "Movies"
-                        else f"{value}/5"
-                    )
+                c1.write(
+                    f"**Purchases:** {item['Purchase Count']}"
+                )
+                c2.write(f"**Stock:** {item['Stock Status']}")
 
-                elif field in ["Click Through Rate", "Conversion Rate"]:
-                    number = float(value)
-                    value = (
-                        f"{number * 100:.2f}%"
-                        if abs(number) <= 1
-                        else f"{number:.2f}%"
-                    )
+            elif category == "Products":
+                c1, c2, c3 = st.columns(3)
 
-                st.write(f"**{field}:** {value}")
+                c1.write(f"**Category:** {item['Category']}")
+                c2.write(f"**Rating:** {item['Rating']}/5")
 
+                ctr = float(item["Click Through Rate"])
+                conversion = float(item["Conversion Rate"])
+
+                if abs(ctr) <= 1:
+                    ctr *= 100
+                if abs(conversion) <= 1:
+                    conversion *= 100
+
+                c3.write(f"**Click-through Rate:** {ctr:.1f}%")
+                c1.write(f"**Conversion Rate:** {conversion:.1f}%")
+
+            similarity = float(item["Similarity"])
             st.progress(
-                min(max(float(item["Similarity"]), 0.0), 1.0),
-                text="Content similarity (not accuracy)"
+                max(0.0, min(1.0, similarity)),
+                text=f"Content similarity: {similarity * 100:.1f}%"
             )
-
-
-def budget_filter(df, label):
-    prices = pd.to_numeric(df["Price (USD)"], errors="coerce")
-    available = prices.dropna()
-
-    if available.empty:
-        st.info(
-            "budget filtering."
-        )
-        return df.copy()
-
-    currency = st.radio(
-        "Budget currency",
-        ["USD ($)", "INR (₹)"],
-        horizontal=True,
-        key=f"currency_{label}"
-    )
-
-    rate = st.session_state.usd_inr_rate
-    max_usd = float(available.max())
-
-    if currency == "INR (₹)":
-        max_budget = max(100.0, max_usd * rate)
-        default_budget = min(30000.0, max_budget)
-
-        budget = st.slider(
-            "Maximum budget (₹)",
-            0.0, max_budget, default_budget,
-            step=max(1.0, min(500.0, max_budget / 100)),
-            key=f"budget_inr_{label}"
-        )
-
-        budget_usd = budget / rate
-
-    else:
-        max_budget = max(1.0, max_usd)
-        default_budget = min(500.0, max_budget)
-
-        budget = st.slider(
-            "Maximum budget ($)",
-            0.0, max_budget, default_budget,
-            step=max(0.01, min(25.0, max_budget / 100)),
-            key=f"budget_usd_{label}"
-        )
-
-        budget_usd = budget
-
-    return df[
-        prices.isna() | (prices <= budget_usd)
-    ].copy()
 
 
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 
+
 if st.session_state.page == "Home":
     st.markdown("""
     <div class="hero">
         <h1>🎯 RecoVerse AI</h1>
-        <h3>Your Personal Recommendation Hub</h3>
+        <h3>Your Personal Recommendation System</h3>
         <p>Discover movies, books and products based on your interests.</p>
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
-    st.subheader("What would you like to discover?")
 
-    c1, c2, c3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-    for col, name, emoji, desc in [
-        (c1, "Movies", "🎬", "Discover trending movies"),
-        (c2, "Books", "📚", "Explore books and authors"),
-        (c3, "Products", "🛍️", "Find products for your needs")
-    ]:
-        with col:
-            with st.container(border=True):
-                st.markdown(f"## {emoji} {name}")
-                st.write(desc)
+    with col1:
+        with st.container(border=True):
+            st.markdown("## 🎬 Movies")
+            st.write("Discover movies based on genre and ratings.")
+            st.metric("Movies Available", len(movie_df))
+            if st.button("Explore Movies", key="home_movies"):
+                st.session_state.page = "Movies"
+                st.rerun()
 
-                if st.button(f"Explore {name}", key=f"home_{name}"):
-                    st.session_state.page = name
-                    st.rerun()
+    with col2:
+        with st.container(border=True):
+            st.markdown("## 📚 Books")
+            st.write("Find books based on authors and categories.")
+            st.metric("Books Available", len(book_df))
+            if st.button("Explore Books", key="home_books"):
+                st.session_state.page = "Books"
+                st.rerun()
+
+    with col3:
+        with st.container(border=True):
+            st.markdown("## 🛍️ Products")
+            st.write("Explore products based on categories and ratings.")
+            st.metric("Products Available", len(product_df))
+            if st.button("Explore Products", key="home_products"):
+                st.session_state.page = "Products"
+                st.rerun()
+
+    st.divider()
+    st.caption("Developed by Mukul Bandewar")
+
 
 else:
+    category = st.session_state.page
+
     if st.button("⬅️ Back to Home"):
         st.session_state.page = "Home"
         st.rerun()
 
-    category = st.session_state.page
-
-    st.title({
-        "Movies": "🎬 Movie Recommendations",
-        "Books": "📚 Book Recommendations",
-        "Products": "🛍️ Product Recommendations"
-    }[category])
+    st.title(f"{category} Recommendation System")
+    st.write("Choose your preferences and find matching recommendations.")
 
     if category == "Movies":
-        df = movie_df.copy()
+        df = movie_df
 
-        genres = sorted(set(
-            word.strip()
-            for value in df["Genre"].dropna()
-            for word in str(value).replace("/", " ").split()
-            if word.strip()
-        ))
+        genres = sorted(
+            df["Genre"].astype(str).unique().tolist()
+        )
+        selected_genres = st.multiselect(
+            "Select Movie Genres",
+            genres
+        )
 
-        selected = st.multiselect("Movie interests", genres)
+        min_rating = float(df["IMDb Rating"].min())
+        max_rating = float(df["IMDb Rating"].max())
 
-        ratings = df["IMDb Rating"].dropna()
+        if min_rating < max_rating:
+            rating_filter = st.slider(
+                "Minimum IMDb Rating",
+                min_value=min_rating,
+                max_value=max_rating,
+                value=min_rating,
+                step=0.5
+            )
+        else:
+            rating_filter = min_rating
 
-        if not ratings.empty:
-            rating_min = float(ratings.min())
-            rating_max = float(ratings.max())
+        favorite = st.selectbox(
+            "Choose a Movie You Like (Optional)",
+            ["None"] + df["Name"].astype(str).tolist()
+        )
 
-            if rating_min < rating_max:
-                rating = st.slider(
-                    "Minimum rating",
-                    rating_min, rating_max, rating_min
-                )
-                df = df[
-                    df["IMDb Rating"].isna()
-                    | (df["IMDb Rating"] >= rating)
+        count = st.slider(
+            "Number of Recommendations",
+            min_value=1,
+            max_value=min(10, len(df)),
+            value=min(5, len(df))
+        )
+
+        if st.button("Find Movies"):
+            filtered = df.copy()
+
+            if selected_genres:
+                filtered = filtered[
+                    filtered["Genre"].astype(str).isin(selected_genres)
                 ]
 
-        favorite = st.selectbox(
-            "Favorite movie",
-            ["None"] + df["Name"].astype(str).tolist()
-        )
+            filtered = filtered[
+                filtered["IMDb Rating"] >= rating_filter
+            ]
 
-        df = budget_filter(df, "Movies")
-
-        count = st.slider(
-            "Number of recommendations",
-            1, min(10, len(movie_df)), min(5, len(movie_df))
-        )
-
-        if selected:
-            df = df[df["Genre"].apply(
-                lambda value: any(
-                    g.lower() in str(value).lower()
-                    for g in selected
-                )
-            )]
-
-        if st.button("✨ Find Movies"):
-            show_results(
-                recommend(
-                    df,
-                    ["Name", "Genre", "Description"],
-                    " ".join(selected),
-                    favorite,
-                    count
-                ),
-                category
+            results, _ = recommend(
+                filtered,
+                ["Name", "Genre", "Description"],
+                " ".join(selected_genres),
+                "" if favorite == "None" else favorite,
+                count
             )
 
-        st.info( " Recommendation  "
-          
-        )
+            show_results(results, "Movies")
 
     elif category == "Books":
-        df = book_df.copy()
+        df = book_df
 
-        authors = st.multiselect(
-            "Authors (optional)",
-            sorted(df["Author"].dropna().unique())
+        authors = sorted(
+            df["Author"].astype(str).unique().tolist()
+        )
+        genres = sorted(
+            df["Genre"].astype(str).unique().tolist()
         )
 
-        genres = sorted(set(
-            word.strip()
-            for value in df["Genre"].dropna()
-            for word in str(value).replace("/", " ").split()
-            if word.strip()
-        ))
-
-        selected = st.multiselect("Book interests", genres)
+        selected_authors = st.multiselect(
+            "Select Authors",
+            authors
+        )
+        selected_genres = st.multiselect(
+            "Select Book Genres",
+            genres
+        )
 
         favorite = st.selectbox(
-            "Favorite book",
+            "Choose a Book You Like (Optional)",
             ["None"] + df["Name"].astype(str).tolist()
         )
 
-        df = budget_filter(df, "Books")
-
         count = st.slider(
-            "Number of recommendations",
-            1, min(10, len(book_df)), min(5, len(book_df))
+            "Number of Recommendations",
+            min_value=1,
+            max_value=min(10, len(df)),
+            value=min(5, len(df))
         )
 
-        if authors:
-            df = df[df["Author"].isin(authors)]
+        if st.button("Find Books"):
+            filtered = df.copy()
 
-        if selected:
-            df = df[df["Genre"].apply(
-                lambda value: any(
-                    g.lower() in str(value).lower()
-                    for g in selected
-                )
-            )]
+            if selected_authors:
+                filtered = filtered[
+                    filtered["Author"].astype(str).isin(selected_authors)
+                ]
 
-        if st.button("✨ Find Books"):
-            show_results(
-                recommend(
-                    df,
-                    ["Name", "Author", "Genre", "Description"],
-                    " ".join(selected),
-                    favorite,
-                    count
-                ),
-                category
+            if selected_genres:
+                filtered = filtered[
+                    filtered["Genre"].astype(str).isin(selected_genres)
+                ]
+
+            query = " ".join(selected_authors + selected_genres)
+
+            results, _ = recommend(
+                filtered,
+                ["Name", "Author", "Genre", "Description"],
+                query,
+                "" if favorite == "None" else favorite,
+                count
             )
 
-    else:
-        df = product_df.copy()
+            show_results(results, "Books")
 
-        categories = sorted(set(
-            word.strip()
-            for value in df["Category"].dropna()
-            for word in str(value).replace("/", " ").split()
-            if word.strip()
-        ))
+    elif category == "Products":
+        df = product_df
 
-        selected = st.multiselect("Product interests", categories)
+        categories = sorted(
+            df["Category"].astype(str).unique().tolist()
+        )
+        selected_categories = st.multiselect(
+            "Select Product Categories",
+            categories
+        )
 
         favorite = st.selectbox(
-            "Favorite product",
+            "Choose a Product You Like (Optional)",
             ["None"] + df["Name"].astype(str).tolist()
         )
 
-        df = budget_filter(df, "Products")
-
         count = st.slider(
-            "Number of recommendations",
-            1, min(10, len(product_df)), min(5, len(product_df))
+            "Number of Recommendations",
+            min_value=1,
+            max_value=min(10, len(df)),
+            value=min(5, len(df))
         )
 
-        if selected:
-            df = df[df["Category"].apply(
-                lambda value: any(
-                    g.lower() in str(value).lower()
-                    for g in selected
-                )
-            )]
+        if st.button("Find Products"):
+            filtered = df.copy()
 
-        if st.button("✨ Find Products"):
-            show_results(
-                recommend(
-                    df,
-                    ["Name", "Category", "Description"],
-                    " ".join(selected),
-                    favorite,
-                    count
-                ),
-                category
+            if selected_categories:
+                filtered = filtered[
+                    filtered["Category"].astype(str).isin(
+                        selected_categories
+                    )
+                ]
+
+            results, _ = recommend(
+                filtered,
+                ["Name", "Category", "Description"],
+                " ".join(selected_categories),
+                "" if favorite == "None" else favorite,
+                count
             )
 
-st.divider()
-st.caption(
-    "Developer - Mukul Bandewar | RecoVerse AI | "
-    "Python • Streamlit • Pandas"
-)
+            show_results(results, "Products")
+
+    st.divider()
+    st.caption("RecoVerse AI | Developed by Mukul Bandewar")
